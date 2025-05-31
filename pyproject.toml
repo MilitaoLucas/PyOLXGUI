@@ -1,0 +1,11 @@
+[project]
+name = "olxguiframework"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "dominate>=2.9.1",
+    "jupyter>=1.1.1",
+    "jupyterlab>=4.4.3",
+    "pygments>=2.19.1",
+]
