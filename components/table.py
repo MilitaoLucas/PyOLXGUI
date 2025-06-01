@@ -1,11 +1,19 @@
 from dataclasses import dataclass, asdict, field
 import dominate
 from dominate.tags import *
+from dominate.util import raw, text
 from typing import List, Optional, Union, Any
 import copy
 
-from tests import tr1_parameters
+from pygments import highlight
+from pygments.lexers import HtmlLexer
+from pygments.formatters import TerminalFormatter
 from .item_component import BaseItemComponent, SPACING
+
+from bs4 import BeautifulSoup
+LEXER = HtmlLexer()
+FORMATTER = TerminalFormatter()
+
 
 @dataclass
 class TableConfig:
@@ -52,6 +60,9 @@ class TableConfig:
         
         if self.table2_parameters is None:
             self.table2_parameters = {"width": "100%", "cellpadding": "0", "cellspacing": "2"}
+        
+        if self.tr3_parameters is None:
+            self.tr3_parameters = {"bgcolor": "GetVar(HtmlTableGroupBgColour)"} 
     
 class Table:
     """
@@ -61,45 +72,39 @@ class Table:
     def __init__(self,
                  rows: List[List[Union[BaseItemComponent, str]]],
                  header: Optional[List[str]] = None,
-                 spacing: int = SPACING,
-                 tr_attributes: dict = None,
-                 table_attributes: dict = None,
+                 config: TableConfig = TableConfig(),
                  **kwargs):
         self.rows = rows
+        self.config = config
         self.header = header
-
-        self.spacing = spacing
         self.kwargs = kwargs
-
-    def generate_table_header(self):
-        """Generate the HTML table header if provided."""
-        if not self.header:
-            return ""
-
-        header_str = f"{self.spacing*" "}<tr{self.generate_attributes(self.tr_attributes)}>\n"
-        for h in self.header:
-            header_str += f"{self.spacing*" "}  <th>{h}</th>\n"
-        header_str += f"{self.spacing*" "}</tr>\n"
-        return header_str
-
+        self.structures = []
+        self.generate_table_rows()
+    
+    def apply_structure(self, comp):
+        fel = tr(self.config.tr1_parameters)
+        fel.add(td(self.config.td1_parameters, 
+                   table(self.config.table1_parameters, 
+                         tr(self.config.tr2_parameters, 
+                            td(self.config.td2_parameters, 
+                               table(self.config.table2_parameters, comp))))))
+                     
+        return fel
+    
+    def apply_row(self, row):
+        with tr(self.config.tr3_parameters) as row_app:
+            for cell in row:
+                if isinstance(cell, BaseItemComponent):
+                    raw("\n" + str(cell) + "\n")
+                else:
+                    cell
+            
+        return row_app
+                
     def generate_table_rows(self):
         """Generate all table rows from the component lists."""
-        rows_str = ""
         for row in self.rows:
-            rows_str += f"{self.spacing*" "}<tr>\n"
-            for cell in row:
-                spacing = 2*self.spacing*" "
-                if isinstance(cell, BaseItemComponent):
-                    rows_str += f"<td>\n"
-                    # Copy the component to avoid modifying the original
-                    # Adjust spacing to match the table indentation
-                    cell.spacing = 3*self.spacing
-                    rows_str += str(cell)
-                    rows_str += f"\n{2*self.spacing*" "}</td>\n"
-                else:
-                    rows_str += "\n".join([spacing + c for c in cell.split("\n")])
-            rows_str += f"{self.spacing*" "}</tr>\n"
-        return rows_str
+            self.structures.append(self.apply_structure(self.apply_row(row)))
 
     @staticmethod
     def generate_attributes(attr_dict: dict):
@@ -112,24 +117,12 @@ class Table:
 
     def __str__(self):
         """Generate the complete HTML table."""
-        attr_str = self.generate_attributes(self.table_attributes)
-        table_str = f"<table{attr_str}>\n"
-
-        # Add header if provided
-        header_str = self.generate_table_header()
-        if header_str:
-            table_str += header_str
-
-        # Add rows
-        table_str += self.generate_table_rows()
-
-        # Close table
-        table_str += f"</table>"
-
-        return table_str
+        html = "".join(str(structure) for structure in self.structures)
+        pretty_html = BeautifulSoup(html, 'html.parser').prettify()
+        return pretty_html
 
     def __repr__(self):
-        return self.__str__()
+        return highlight(str(self.__str__()), LEXER, FORMATTER)
 
 
 @dataclass
@@ -139,7 +132,6 @@ class SimpleTable:
     This is useful for creating basic tables with minimal configuration.
     """
     rows: List[List[Union[BaseItemComponent, str]]]
-    header: List[str] = field(default_factory=list)
     table_class: str = ""
     table_id: str = ""
     table_style: str = ""

@@ -4,11 +4,13 @@ from typing import Optional
 SPACING = 4
 
 class BaseItemComponent:
-    def __init__(self, snippet: str, spacing: int = SPACING, **kwargs):
+    def __init__(self, snippet: str, spacing: int = SPACING, td_comp: Optional[dict] = None, **kwargs):
         self.parameters = dict()
         self.snippet_path = snippet
         self.spacing: int = spacing
         self.exclude_fields = ["spacing"]
+        self.td_comp = td_comp if not td_comp is None else {"width":"1%", "align":"left"}
+
 
     def add_paramater(self, param: dict) -> None:
         if not type(param) is dict:
@@ -19,13 +21,22 @@ class BaseItemComponent:
 
     def make_str_snippet(self):
         spacing = self.spacing * " "
-        str_s = spacing + "$+\n" + f"{spacing}html.Snippet(\n"
+        str_s = f"<td{self.generate_attributes(self.td_comp)}>\n{spacing}$+\n" + f"{spacing}html.Snippet(\n"
         str_s += f"{2*spacing}\"{self.snippet_path}\"\n"
         for k,v in self.parameters.items():
             if len(v) == 0: continue
             str_s += f"{2*spacing}\"{k}={v}\",\n"
-        str_s += f"{spacing})\n{spacing}$-"
+        str_s += f"{spacing})\n{spacing}$-\n{spacing}</td>"
         return str_s
+
+    @staticmethod
+    def generate_attributes(attr_dict: dict):
+        """Generate HTML table attributes."""
+        attr_str = ""
+        for key, value in attr_dict.items():
+            if value:  # Only add non-empty attributes
+                attr_str += f" {key}=\"{value}\""
+        return attr_str
 
     def dict_factory(self, x):
         return {k: v for (k, v) in x if ((v is not None) and (k not in self.exclude_fields))}
@@ -63,6 +74,7 @@ class InputComboComponent(BaseItemComponent):
     bgcolor: str = ""
     fgcolor: str = ""
     disabled: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -87,6 +99,7 @@ class GuiLinkComponent(BaseItemComponent):
     fit: str = ""
     flat: str = ""
     onclick: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -115,6 +128,7 @@ class GuiLinkPlainComponent(BaseItemComponent):
     bgcolor: str = ""
     fgcolor: str = ""
     custom: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -143,6 +157,7 @@ class GuiLinkButtonComponent(BaseItemComponent):
     disabled: str = ""
     bgcolor: str = ""
     fgcolor: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -171,6 +186,7 @@ class InputButtonComponent(BaseItemComponent):
     hint: str = ""
     disabled: str = ""
     custom: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -201,6 +217,7 @@ class InputButtonTdComponent(BaseItemComponent):
     custom: str = ""
     td1: str = ""
     td2: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -233,6 +250,7 @@ class InputCheckboxComponent(BaseItemComponent):
     manage: str = ""
     disabled: str = ""
     custom: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -264,6 +282,7 @@ class InputCheckboxPlainComponent(BaseItemComponent):
     custom: str = ""
     target: str = ""
     data: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -295,6 +314,7 @@ class InputCheckboxTdComponent(BaseItemComponent):
     custom: str = ""
     td1: str = ""
     td2: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -330,6 +350,7 @@ class InputComboTdComponent(BaseItemComponent):
     custom: str = ""   
     td1: str = ""
     td2: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -353,6 +374,7 @@ class InputLabelComponent(BaseItemComponent):
     bgcolor: str = ""
     valign: str = ""
     halign: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -385,6 +407,7 @@ class InputSliderComponent(BaseItemComponent):
     swidth: str = ""
     invert: str = ""
     bgcolor: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -419,6 +442,7 @@ class InputSpinTdComponent(BaseItemComponent):
     onleave: str = ""
     onreturn: str = ""
     onenter: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -447,6 +471,7 @@ class InputTextComponent(BaseItemComponent):
     onchange: str = ""
     onleave: str = ""
     onreturn: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
@@ -473,6 +498,7 @@ class InputTextTdComponent(BaseItemComponent):
     fgcolor: str = ""
     onchange: str = ""
     onleave: str = ""
+    td_comp: Optional[dict] = None
     spacing: int = SPACING
 
     def __post_init__(self):
