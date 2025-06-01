@@ -1,5 +1,9 @@
 from dataclasses import dataclass, asdict
-from typing import Optional
+from typing import Optional, Iterable
+
+from dominate.tags import *
+from dominate.tags import comment
+from mistune.helpers import HTML_TAGNAME
 
 SPACING = 4
 
@@ -511,3 +515,24 @@ class InputTextTdComponent(BaseItemComponent):
     def __repr__(self): return super().__repr__()
     def __str__(self): return super().__str__()
 
+@dataclass
+class IncludeComment:
+    name: str
+    path: str
+    other_pars: Optional[Iterable[str]] = None
+    
+    def __str__(self):
+        final_str = self.path + ";".join(self.other_pars)
+        return f"<!-- #include {self.name} {final_str} -->"
+
+
+def text_bold(text: str, width: str="100%", align: str="center"):
+    with td({"width": width, "align": align}) as btext:
+        b(text)
+    return btext
+
+class ignore(html_tag):
+    """
+    Represents an <ignore> custom HTML tag.
+    """
+    tagname = 'ignore'

@@ -8,7 +8,7 @@ import copy
 from pygments import highlight
 from pygments.lexers import HtmlLexer
 from pygments.formatters import TerminalFormatter
-from .item_component import BaseItemComponent, SPACING
+from .item_component import BaseItemComponent, SPACING, IncludeComment
 
 from bs4 import BeautifulSoup
 LEXER = HtmlLexer()
@@ -60,9 +60,9 @@ class TableConfig:
         
         if self.table2_parameters is None:
             self.table2_parameters = {"width": "100%", "cellpadding": "0", "cellspacing": "2"}
-        
+
         if self.tr3_parameters is None:
-            self.tr3_parameters = {"bgcolor": "GetVar(HtmlTableGroupBgColour)"} 
+            self.tr3_parameters = {"bgcolor": "GetVar(HtmlTableGroupBgColour)"}
     
 class Table:
     """
@@ -70,7 +70,7 @@ class Table:
     Creates HTML tables based on lists of components.
     """
     def __init__(self,
-                 rows: List[List[Union[BaseItemComponent, str]]],
+                 rows: List[List[Union[BaseItemComponent, IncludeComment, str]]],
                  header: Optional[List[str]] = None,
                  config: TableConfig = TableConfig(),
                  **kwargs):
@@ -80,27 +80,29 @@ class Table:
         self.kwargs = kwargs
         self.structures = []
         self.generate_table_rows()
-    
+
     def apply_structure(self, comp):
         fel = tr(self.config.tr1_parameters)
-        fel.add(td(self.config.td1_parameters, 
-                   table(self.config.table1_parameters, 
-                         tr(self.config.tr2_parameters, 
-                            td(self.config.td2_parameters, 
+        fel.add(td(self.config.td1_parameters,
+                   table(self.config.table1_parameters,
+                         tr(self.config.tr2_parameters,
+                            td(self.config.td2_parameters,
                                table(self.config.table2_parameters, comp))))))
-                     
+
         return fel
-    
+
     def apply_row(self, row):
         with tr(self.config.tr3_parameters) as row_app:
             for cell in row:
                 if isinstance(cell, BaseItemComponent):
                     raw("\n" + str(cell) + "\n")
+                elif isinstance(cell, IncludeComment):
+                    raw("\n" + str(cell) + "\n")
                 else:
-                    cell
-            
+                    row_app.add(cell)
+
         return row_app
-                
+
     def generate_table_rows(self):
         """Generate all table rows from the component lists."""
         for row in self.rows:
@@ -121,75 +123,8 @@ class Table:
         pretty_html = BeautifulSoup(html, 'html.parser').prettify()
         return pretty_html
 
+    def raw_str(self):
+        return "".join(str(structure) for structure in self.structures)
+
     def __repr__(self):
         return highlight(str(self.__str__()), LEXER, FORMATTER)
-
-
-@dataclass
-class SimpleTable:
-    """
-    A simple dataclass-based table implementation that follows the BaseItemComponent pattern.
-    This is useful for creating basic tables with minimal configuration.
-    """
-    rows: List[List[Union[BaseItemComponent, str]]]
-    table_class: str = ""
-    table_id: str = ""
-    table_style: str = ""
-    border: str = ""
-    cellpadding: str = ""
-    cellspacing: str = ""
-    width: str = ""
-    spacing: int = SPACING
-    table_attributes: dict = field(default_factory=dict)
-    tr_attributes: dict = field(default_factory=dict)
-
-    def __post_init__(self):
-        self.table = Table(
-            rows=self.rows,
-            header=self.header,
-            table_class=self.table_class,
-            table_id=self.table_id,
-            table_style=self.table_style,
-            border=self.border,
-            cellpadding=self.cellpadding,
-            cellspacing=self.cellspacing,
-            width=self.width,
-            spacing=self.spacing,
-            tr_attributes = self.tr_attributes,
-            table_attributes =  self.table_attributes,
-        )
-
-    def __str__(self):
-        return str(self.table)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-# Example specialized table implementations
-@dataclass
-class DataTable(SimpleTable):
-    """
-    A data table with styling suitable for displaying data.
-    """
-    def __post_init__(self):
-        if not self.table_class:
-            self.table_class = "data-table"
-        if not self.border:
-            self.border = "1"
-        if not self.cellpadding:
-            self.cellpadding = "3"
-        super().__post_init__()
-
-
-@dataclass
-class FormTable(SimpleTable):
-    """
-    A table designed for form layouts with components.
-    """
-    def __post_init__(self):
-        if not self.table_class:
-            self.table_class = "form-table"
-        if not self.cellpadding:
-            self.cellpadding = "2"
-        super().__post_init__()
