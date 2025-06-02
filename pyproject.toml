@@ -1,7 +1,7 @@
 [project]
 name = "PyOLXGUI"
 version = "0.1.0"
-description = "Add your description here"
+description = "PyOLXGUI is a simple Dominate based Python library for creating Olex2 GUI files"
 requires-python = ">=3.13"
 dependencies = [
     "beautifulsoup4>=4.13.4",
