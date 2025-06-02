@@ -8,7 +8,7 @@ import copy
 from pygments import highlight
 from pygments.lexers import HtmlLexer
 from pygments.formatters import TerminalFormatter
-from .item_component import BaseItemComponent, SPACING, IncludeComment
+from .item_component import BaseItemComponent, SPACING, include_comment, ignore
 
 from bs4 import BeautifulSoup
 LEXER = HtmlLexer()
@@ -23,12 +23,14 @@ class TableConfig:
         <td colspan="#colspan> <!-- configurable with td1_parameters -->
           <table border="0" width="100%" cellpadding="0" cellspacing="0" Xbgcolor="#ffaaaa"> <!-- configurable with table1_parameters -->
             <tr Xbgcolor="#ffffaa"> <!-- configurable with tr2_parameters -->
-              <td width='#width%' align='left'> <!-- configurable with td2_parameters -->
+            <!-- those bellow are part of the TableGroup Class
+              <td width='#width%' align='left'> <!-- configurable with td2_parameters --> 
                 <table width='100%'cellpadding="0" cellspacing="2"> <!-- configurable with table2_parameters -->
                   <tr bgcolor="GetVar(HtmlTableGroupBgColour)"> <!-- configurable with tr3_parameters -->
                       <!-- Any content -->
                   </tr>
               </td>
+            <!-- those above are part of the TableGroup Class
             </tr>
           </table>
         </td>
@@ -69,34 +71,52 @@ class Table:
     Dynamic table generator for Olex2 GUI framework.
     Creates HTML tables based on lists of components.
     """
+    ignore_condition: str
+
     def __init__(self,
-                 rows: List[List[Union[BaseItemComponent, IncludeComment, str]]],
+                 rows: List[List[Union[BaseItemComponent, html_tag, str]]],
                  header: Optional[List[str]] = None,
                  config: TableConfig = TableConfig(),
+                 ignore_condition: Optional[str] = None,
+                 comment_obj: Optional[html_tag] = None,
                  **kwargs):
         self.rows = rows
         self.config = config
         self.header = header
         self.kwargs = kwargs
         self.structures = []
+        self.comment_obj = comment_obj
+        self.ignore_tag = False
+
+        if not ignore_condition is None:
+            self.ignore_tag = True
+            self.ignore_condition = ignore_condition
         self.generate_table_rows()
 
     def apply_structure(self, comp):
-        fel = tr(self.config.tr1_parameters)
+        if self.comment_obj:
+            fel = tr(self.config.tr1_parameters, self.comment_obj)
+        else: 
+            fel = tr(self.config.tr1_parameters)
         fel.add(td(self.config.td1_parameters,
                    table(self.config.table1_parameters,
                          tr(self.config.tr2_parameters,
-                            td(self.config.td2_parameters,
-                               table(self.config.table2_parameters, comp))))))
+                            comp))))
 
         return fel
+    
+    def apply_group(self, comp):
+        return td(self.config.td2_parameters,
+                  table(self.config.table2_parameters, 
+                        tr(self.config.tr3_parameters, comp)))
 
     def apply_row(self, row):
-        with tr(self.config.tr3_parameters) as row_app:
+        group = td(self.config.td2_parameters).add(
+                table(self.config.table2_parameters)).add( 
+                        tr(self.config.tr3_parameters))
+        with group as row_app:
             for cell in row:
                 if isinstance(cell, BaseItemComponent):
-                    raw("\n" + str(cell) + "\n")
-                elif isinstance(cell, IncludeComment):
                     raw("\n" + str(cell) + "\n")
                 else:
                     row_app.add(cell)
@@ -119,12 +139,28 @@ class Table:
 
     def __str__(self):
         """Generate the complete HTML table."""
-        html = "".join(str(structure) for structure in self.structures)
-        pretty_html = BeautifulSoup(html, 'html.parser').prettify()
+        html = self.raw_str()            
+        pretty_html = BeautifulSoup(str(html), 'html.parser').prettify()
         return pretty_html
 
     def raw_str(self):
-        return "".join(str(structure) for structure in self.structures)
+        if not self.ignore_tag:
+            html = self.structures[0]
+            for structure in self.structures[1:]:
+                html.add(structure)
+
+        else:
+            html = ignore( test=f"{self.ignore_condition}")
+            for structure in self.structures:
+                html.add(structure)
+        return str(html)
 
     def __repr__(self):
         return highlight(str(self.__str__()), LEXER, FORMATTER)
+
+class TableGroup():
+    """
+    This is supposed to imitate the behavior of group_begin.htm block. I want to do self contained blocks to avoid 
+    errors.
+    """
+    pass
