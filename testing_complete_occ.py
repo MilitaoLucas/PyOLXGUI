@@ -2,16 +2,14 @@
 from importlib import reload
 import ast
 
-import components.item_component
-import components.table
+import olx_gui.components.item_component
+import olx_gui.components.table
 import temp.blocks
 reload(temp.blocks)
-reload(components.item_component)
-reload(components.table)
-from temp.blocks import INCLUDES, BLOCKS
-from components.item_component import *
-from components.table import *
-from dataclasses import asdict
+reload(olx_gui.components.item_component)
+reload(olx_gui.components.table)
+from olx_gui.components.item_component import *
+from olx_gui.components.table import *
 import re
 lexer = HtmlLexer()
 formatter = TerminalFormatter() # This will output ANSI escape codes
