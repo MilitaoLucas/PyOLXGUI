@@ -288,6 +288,6 @@ html_final = ignore(*(raw(str(i)) for i in calculate_list), test="spy.GetParam('
 html_final = str(first_comment) + "\n\n" + str(html_final) + "\n" + str(table6)
 pretty_html = BeautifulSoup(str(html_final), 'html.parser').prettify()
 highlighted_html = highlight(str(pretty_html), lexer, formatter)
-with open("/home/lucas/PycharmProjects/olex2-gui/util/pyUtil/NoSpherA2/h3-refine_NoSpherA2-oc-extras.htm", "w") as f:
+with open("/home/lucas/olex2-gui-setup/olex2-gui-git/util/pyUtil/NoSpherA2/h3-refine_NoSpherA2-oc-extras.htm", "w") as f:
     f.write(str(pretty_html))
 print(highlighted_html)
