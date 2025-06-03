@@ -1,4 +1,4 @@
-#%%
+import os
 from importlib import reload
 import ast
 
@@ -10,6 +10,7 @@ reload(olx_gui.components.item_component)
 reload(olx_gui.components.table)
 from olx_gui.components.item_component import *
 from olx_gui.components.table import *
+from dotenv import load_dotenv, set_key
 import re
 lexer = HtmlLexer()
 formatter = TerminalFormatter() # This will output ANSI escape codes
@@ -49,42 +50,40 @@ table1 = Table(
         ],
         [
             include_comment(name="tool-help-first-column", path="gui/blocks/tool-help-first-column.htm", other_pars=['help_ext=NoSpherA2_Options_1', '1']),
-            text_bold("Basis Set", width="22%", align="left"),
+            text_bold("Basis Set", width="15%", align="left"),
             GeneralComponent("gui/snippets/input-combo",
                              name="NoSpherA2_basis@refine",
                              items="spy.NoSpherA2.getBasisListStr()",
                              value="spy.GetParam('snum.NoSpherA2.basis_name')",
                              onchange="spy.NoSpherA2.change_basisset"
                                       "(html.GetValue('~name~'))",
-                             td_comp={"width": "28%"}
+                             td_comp={"width": "15%"}
                              ).dominate,
-            text_bold("Method", width="22%", align="right"),
+            text_bold("Method ", width="12%", align="right"),
             GeneralComponent(
                 "gui/snippets/input-combo",
                 name="NoSpherA2_method@refine",
                 items="spy.NoSpherA2.get_functional_list()",
                 value="spy.GetParam('snum.NoSpherA2.method')",
                 onchange="spy.SetParam('snum.NoSpherA2.method',html.GetValue('~name~'))",
-                td_comp={"width": "28%"}
+                td_comp={"width": "14%"}
             ).dominate,
-        ],
-        [
-            text_bold("CPUs", width="10%", align="right"),
+            text_bold("CPUs", width="5%", align="right"),
             GeneralComponent(
                 "gui/snippets/input-combo",
                 name="NoSpherA2_cpus@refine",
                 items="spy.NoSpherA2.getCPUListStr()",
                 value="spy.GetParam('snum.NoSpherA2.ncpus')",
                 onchange="spy.SetParam('snum.NoSpherA2.ncpus',html.GetValue('~name~'))",
-                td_comp={"width": "20%", "align": "center"}
+                td_comp={"width": "10%", "align": "center"}
             ).dominate,
-            text_bold("Mem(Gb)", width="10%", align="right"),
+            text_bold("Mem(Gb)", width="5%", align="right"),
             GeneralComponent(
                 "gui/snippets/input-text",
                 name="NoSpherA2_mem",
                 value="spy.GetParam('snum.NoSpherA2.mem')",
                 onchange="spy.SetParam('snum.NoSpherA2.mem',html.GetValue('~name~'))",
-                td_comp={"width": "20%", "align": "center"}
+                td_comp={"width": "30%", "align": "center"}
             ).dominate
         ],
     ],
@@ -262,10 +261,7 @@ table5 = Table(
         ],
     ],
     config=cfg,
-    comment_obj = include_comment(
-        name="tool-help-first-column", path="gui/blocks/tool-help-first-column.htm", other_pars=['help_ext=NoSpherA2_Options_RIFit', '1']
-    ),
-    ignore_condition="not(spy.NoSpherA2.is_disordered())"
+    ignore_condition="spy.NoSpherA2.is_disordered()"
 )
 
 table6 = Table(
@@ -275,9 +271,6 @@ table6 = Table(
         ],
     ],
     config=cfg,
-    comment_obj = include_comment(
-        name="tool-help-first-column", path="gui/blocks/tool-first-column.htm", other_pars=['help_ext=NoSpherA2 Extras', '1']
-    ),
     ignore_condition="not(spy.GetParam('snum.NoSpherA2.Calculate'))"
 )
 
@@ -288,6 +281,8 @@ html_final = ignore(*(raw(str(i)) for i in calculate_list), test="spy.GetParam('
 html_final = str(first_comment) + "\n\n" + str(html_final) + "\n" + str(table6)
 pretty_html = BeautifulSoup(str(html_final), 'html.parser').prettify()
 highlighted_html = highlight(str(pretty_html), lexer, formatter)
-with open("/home/lucas/olex2-gui-setup/olex2-gui-git/util/pyUtil/NoSpherA2/h3-refine_NoSpherA2-oc-extras.htm", "w") as f:
+load_dotenv()
+
+with open(os.getenv("DEPLOY_PATH"), "w") as f:
     f.write(str(pretty_html))
 print(highlighted_html)

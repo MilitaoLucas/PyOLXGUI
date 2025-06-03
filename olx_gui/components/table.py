@@ -1,7 +1,7 @@
 from dataclasses import dataclass, asdict, field
 import dominate
 from dominate.tags import *
-from dominate.util import raw, text
+from dominate.util import raw, text, unescape
 from typing import List, Optional, Union, Any
 import copy
 
@@ -49,7 +49,7 @@ class TableConfig:
             self.tr1_parameters = {"ALIGN": "left", "NAME": "NAME", "width": "100%"}
         
         if self.td1_parameters is None:
-            self.td1_parameters = {"colspan": "#colspan"}
+            self.td1_parameters = {"colspan": "1"}
             
         if self.table1_parameters is None:
             self.table1_parameters = {"border": "0", "width": "100%", "cellpadding": "0", "cellspacing": "0", "Xbgcolor": "#ffaaaa"}
@@ -64,7 +64,7 @@ class TableConfig:
             self.table2_parameters = {"width": "100%", "cellpadding": "0", "cellspacing": "2"}
 
         if self.tr3_parameters is None:
-            self.tr3_parameters = {"bgcolor": "GetVar(HtmlTableGroupBgColour)"}
+            self.tr3_parameters = {"bgcolor": "$GetVar(HtmlTableGroupBgColour)"}
     
 class Table:
     """
@@ -140,7 +140,7 @@ class Table:
     def __str__(self):
         """Generate the complete HTML table."""
         html = self.raw_str()            
-        pretty_html = BeautifulSoup(str(html), 'html.parser').prettify()
+        pretty_html = BeautifulSoup(str(html), 'html.parser').prettify().replace("&gt;", ">").replace("&lt;", "<")
         return pretty_html
 
     def raw_str(self):
@@ -148,11 +148,11 @@ class Table:
             html = self.structures[0]
             for structure in self.structures[1:]:
                 html.add(structure)
-
         else:
-            html = ignore( test=f"{self.ignore_condition}")
+            html = ignore(test=f"{self.ignore_condition}")
             for structure in self.structures:
                 html.add(structure)
+        
         return str(html)
 
     def __repr__(self):
