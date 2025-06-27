@@ -68,6 +68,12 @@ table1 = Table(
                 onchange="spy.SetParam('snum.NoSpherA2.method',html.GetValue('~name~'))",
                 td_comp={"width": "14%"}
             ).dominate,
+            ComboBoxComponent(
+                name="NoSpherA2_method@refine",
+                items="spy.NoSpherA2.get_functional_list()",
+                phil="snum.NoSpherA2.method",
+                td_comp={"width": "14%"}
+            ).dominate,
             text_bold("CPUs", width="5%", align="right"),
             GeneralComponent(
                 "gui/snippets/input-combo",

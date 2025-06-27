@@ -2,12 +2,15 @@
 name = "PyOLXGUI"
 version = "0.1.0"
 description = "PyOLXGUI is a simple Dominate based Python library for creating Olex2 GUI files"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "beautifulsoup4>=4.13.4",
     "dominate>=2.9.1",
     "dotenv>=0.9.9",
     "jupyter>=1.1.1",
-    "jupyterlab>=4.4.3",
     "pygments>=2.19.1",
+    "pytest>=8.3.5",
 ]
+
+[tool.uv.workspace]
+members = ["olexpy"]

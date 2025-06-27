@@ -1,6 +1,6 @@
 from copy import copy
 from dataclasses import dataclass, asdict
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Union
 
 from dominate.tags import *
 from dominate.util import raw
@@ -75,6 +75,11 @@ class GeneralComponent(BaseItemComponent):
         par_dict = dict()
         for key, value in kwargs.items():
             par_dict.update({key: value})
+        if "phil" in par_dict:
+            if not "onchange" in par_dict:
+                par_dict["onchange"] = f"spy.SetParam('{par_dict["phil"]}',html.GetValue('~name~'))"
+            if not "value" in par_dict:
+                par_dict["value"] = f"spy.GetParam('{par_dict["phil"]}')"
         super().__init__(snippet, spacing = spacing, **kwargs)
         par_dict_bak = copy(par_dict)
         for i in tuple(par_dict.keys()):
@@ -83,11 +88,22 @@ class GeneralComponent(BaseItemComponent):
         par_dict = par_dict_bak
         self.parameters = par_dict
 
-
-
     def __repr__(self): return super().__repr__()
     def __str__(self): return super().__str__()
 
+class ComboBoxComponent(GeneralComponent):
+    def __init__(self, name: str, items: Union[str, Iterable[str]], **kwargs):
+        if "phil" in kwargs:
+            phil = kwargs["phil"]
+            kwargs["value"] = f"spy.GetParam('{phil}')"
+            kwargs["onchange"] = f"spy.SetParam('{phil}',html.GetValue('~name~'))"
+            kwargs.pop("phil")
+        kwargs["name"] = name
+        kwargs["items"] = items
+        super().__init__("gui/snippets/input-combo", **kwargs)
+
+    def __repr__(self): return super().__repr__()
+    def __str__(self): return super().__str__()
 
 def to_dict(obj, exclude_fields = None):
     if exclude_fields is None:
