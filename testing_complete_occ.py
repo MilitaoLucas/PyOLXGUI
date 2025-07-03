@@ -60,14 +60,6 @@ table1 = Table(
                              td_comp={"width": "15%"}
                              ).dominate,
             text_bold("Method ", width="12%", align="right"),
-            GeneralComponent(
-                "gui/snippets/input-combo",
-                name="NoSpherA2_method@refine",
-                items="spy.NoSpherA2.get_functional_list()",
-                value="spy.GetParam('snum.NoSpherA2.method')",
-                onchange="spy.SetParam('snum.NoSpherA2.method',html.GetValue('~name~'))",
-                td_comp={"width": "14%"}
-            ).dominate,
             ComboBoxComponent(
                 name="NoSpherA2_method@refine",
                 items="spy.NoSpherA2.get_functional_list()",

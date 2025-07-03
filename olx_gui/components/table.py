@@ -145,14 +145,13 @@ class Table:
 
     def raw_str(self):
         if not self.ignore_tag:
-            html = self.structures[0]
+            html = copy.deepcopy(self.structures[0])
             for structure in self.structures[1:]:
                 html.add(structure)
         else:
             html = ignore(test=f"{self.ignore_condition}")
-            for structure in self.structures:
+            for structure in self.structures.copy():
                 html.add(structure)
-        
         return str(html)
 
     def __repr__(self):

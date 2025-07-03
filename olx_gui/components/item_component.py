@@ -1,4 +1,4 @@
-from copy import copy
+from copy import copy, deepcopy
 from dataclasses import dataclass, asdict
 from typing import Optional, Iterable, Union
 
