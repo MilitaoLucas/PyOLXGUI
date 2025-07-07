@@ -6,12 +6,6 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 
-[manifest]
-members = [
-    "olexpy",
-    "pyolxgui",
-]
-
 [[package]]
 name = "anyio"
 version = "4.9.0"
@@ -1030,11 +1024,6 @@ wheels = [
 ]
 
 [[package]]
-name = "olexpy"
-version = "0.1.0"
-source = { virtual = "olexpy" }
-
-[[package]]
 name = "overrides"
 version = "7.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1183,6 +1172,7 @@ dependencies = [
     { name = "jupyter" },
     { name = "pygments" },
     { name = "pytest" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata]
@@ -1193,6 +1183,7 @@ requires-dist = [
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "pygments", specifier = ">=2.19.1" },
     { name = "pytest", specifier = ">=8.3.5" },
+    { name = "python-dotenv", specifier = ">=1.1.0" },
 ]
 
 [[package]]

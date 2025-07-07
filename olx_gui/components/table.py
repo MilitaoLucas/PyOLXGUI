@@ -49,7 +49,7 @@ class TableConfig:
             self.tr1_parameters = {"ALIGN": "left", "NAME": "NAME", "width": "100%"}
         
         if self.td1_parameters is None:
-            self.td1_parameters = {"colspan": "1"}
+            self.td1_parameters = {"colspan": "#colspan"}
             
         if self.table1_parameters is None:
             self.table1_parameters = {"border": "0", "width": "100%", "cellpadding": "0", "cellspacing": "0", "Xbgcolor": "#ffaaaa"}
@@ -58,7 +58,7 @@ class TableConfig:
             self.tr2_parameters = {"Xbgcolor": "#ffffaa"}
         
         if self.td2_parameters is None:
-            self.td2_parameters = {"width": "#width%", "align": "left"}
+            self.td2_parameters = {"width": "#width", "align": "left"}
         
         if self.table2_parameters is None:
             self.table2_parameters = {"width": "100%", "cellpadding": "0", "cellspacing": "2"}
