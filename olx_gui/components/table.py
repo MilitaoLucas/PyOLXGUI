@@ -58,7 +58,7 @@ class TableConfig:
             self.tr2_parameters = {"Xbgcolor": "#ffffaa"}
         
         if self.td2_parameters is None:
-            self.td2_parameters = {"width": "#width", "align": "left"}
+            self.td2_parameters = {"width": "100", "align": "left"}
         
         if self.table2_parameters is None:
             self.table2_parameters = {"width": "100%", "cellpadding": "0", "cellspacing": "2"}

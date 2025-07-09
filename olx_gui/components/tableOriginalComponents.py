@@ -36,7 +36,6 @@ class TableOriginal(Table):
             comp,
             IC("td-table-off", r"gui\balanced\td-table-off.htm", other_pars=["1"])
         )
-        print(fel)
         return fel
 
     def apply_row(self, row):
