@@ -39,7 +39,7 @@ class TableOriginal(Table):
         return fel
 
     def apply_row(self, row):
-        group = div()
+        group = div(width="100%")
         with group as row_app:
             for cell in row:
                 if isinstance(cell, BaseItemComponent):

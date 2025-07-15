@@ -117,7 +117,14 @@ def to_dict(obj, exclude_fields = None):
     return result
 
 def include_comment(name: str, path: str, other_pars: Optional[Iterable[str]] = None, **kwargs):
-    final_str = f"{path};" + ";".join(other_pars)
+    pars = []
+    for i in other_pars:
+        if not '=' in i:
+            pars.append(i)
+        else:
+            pars.insert(0, i)
+
+    final_str = f"{path};" + ";".join(pars)
     return comment(f" #include {name} {final_str} ", **kwargs)
 
 def text_bold(text: str, width: str="100%", align: str="center"):
@@ -129,3 +136,38 @@ class ignore(html_tag):
     Represents an <ignore> custom HTML tag.
     """
     tagname = 'ignore'
+
+def input_button(name: str, value: str, onclick: str, height: str = "100%", type: str = "button", **kwargs):
+    return input_(type=type, name=name, value=value, height=height, onclick=onclick, bgcolor="#8C8C8F",
+              fgcolor="#ffffff", fit="false", flat="GetVar(linkButton.flat)", disabled="false",
+              custom="GetVar(custom_button)", **kwargs)
+
+def text_input(name: str, value: str = "", label: str = "", width: str = "100%",
+               height: str = "GetVar('HtmlInputHeight')", manage: str = "false",
+               password: str = "false", multiline: str = "false", disabled: str = "false",
+               bgcolor: str = "GetVar('HtmlInputBgColour')",
+               fgcolor: str = "GetVar(HtmlFontColour)", onchange: str = "",
+               onleave: str = "", onreturn: str = ""):
+    """
+    Creates a text input element using dominate tags.
+    """
+    with font(size="$GetVar('HtmlFontSizeControls')") as font_element:
+        input_(
+            type="text",
+            height=height,
+            bgcolor=bgcolor,
+            fgcolor=fgcolor,
+            valign="center",
+            name=name,
+            label=label,
+            width=width,
+            value=value,
+            onchange=onchange,
+            onleave=onleave,
+            onreturn=onreturn,
+            manage=manage,
+            password=password,
+            multiline=multiline,
+            disabled=disabled
+        )
+    return font_element
