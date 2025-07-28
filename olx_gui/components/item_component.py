@@ -137,22 +137,22 @@ class ignore(html_tag):
     """
     tagname = 'ignore'
 
-def input_button(name: str, value: str, onclick: str, height: str = "100%", type: str = "button", **kwargs):
+def input_button(name: str, value: str, onclick: str, height: str = "20", type: str = "button", **kwargs):
     return input_(type=type, name=name, value=value, height=height, onclick=onclick, bgcolor="#8C8C8F",
               fgcolor="#ffffff", fit="false", flat="GetVar(linkButton.flat)", disabled="false",
-              custom="GetVar(custom_button)", **kwargs)
+              custom="GetVar(custom_button)",  **kwargs)
 
-def text_input(name: str, value: str = "", label: str = "", width: str = "100%",
+def text_input(name: str, value: str = "", label: str = "",
                height: str = "GetVar('HtmlInputHeight')", manage: str = "false",
                password: str = "false", multiline: str = "false", disabled: str = "false",
                bgcolor: str = "GetVar('HtmlInputBgColour')",
                fgcolor: str = "GetVar(HtmlFontColour)", onchange: str = "",
-               onleave: str = "", onreturn: str = ""):
+               onleave: str = "", onreturn: str = "", **kwargs):
     """
     Creates a text input element using dominate tags.
     """
-    with font(size="$GetVar('HtmlFontSizeControls')") as font_element:
-        input_(
+    # with font(size="$GetVar('HtmlFontSizeControls')") as font_element:
+    font_element = input_(
             type="text",
             height=height,
             bgcolor=bgcolor,
@@ -160,7 +160,6 @@ def text_input(name: str, value: str = "", label: str = "", width: str = "100%",
             valign="center",
             name=name,
             label=label,
-            width=width,
             value=value,
             onchange=onchange,
             onleave=onleave,
@@ -168,6 +167,95 @@ def text_input(name: str, value: str = "", label: str = "", width: str = "100%",
             manage=manage,
             password=password,
             multiline=multiline,
-            disabled=disabled
+            disabled=disabled,
+            **kwargs
         )
     return font_element
+
+"""
+
+#label
+#width=0
+#height=20
+#manage=false
+#right=false
+#bgcolor=GetVar(HtmlTableBgColour)
+#fgcolor=GetVar(HtmlFontColour)
+#disabled=false
+#oncheck="html.SetData(~name~,'True')"
+#onuncheck="html.SetData(~name~,' ')"
+#custom=GetVar(custom_button)
+  <table cellpadding="0" cellspacing="0">
+    <tr>
+      <td>
+        <font size="$GetVar('HtmlFontSizeControls')">
+          <input
+            type="checkbox"
+            height="#height"
+            fgcolor="#fgcolor"
+            bgcolor="#bgcolor"
+            name="#name"
+            value="#value"
+            checked="false"
+            onclick="#onclick"
+            oncheck="#oncheck"
+            onuncheck="#onuncheck"
+            right="#right"
+            manage="#manage"
+            disabled="#disabled"
+            custom="#custom"
+          >
+        </font>
+      </td>  
+      <td align='left'>
+        <b>#label </b>
+      </td>
+    </tr>
+  </table>
+"""
+# TODO: Make every component as good as this one
+class InputCheckbox(table):
+    tagname = "table"
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", **kwargs):
+        if not kwargs:
+            kwargs = {"cellpadding": "0",  "cellspacing": "0"}
+        super().__init__(**kwargs)
+        self.tr = tr()
+        self.td_input = td()
+        self.font = font(size="$GetVar('HtmlFontSizeControls')")
+        self.input = input_(type="checkbox", height=20, width=0, fgcolor="GetVar(HtmlFontColour)",
+                            bgcolor="GetVar(HtmlTableBgColour)", name=name #, oncheck="spy.SetData(~name~,'True')",onuncheck="html.SetData(~name~,'False')"
+                            )
+        self.td_label = td(align="left")
+        if isinstance(txt_label, str):
+            self.label = b(txt_label)
+        else:
+            self.label = txt_label
+        self.font.add(self.input)
+        self.td_input.add(self.font)
+        self.td_label.add(self.label)
+        self.tr.add(self.td_input)
+        self.tr.add(self.td_label)
+        self.add(self.tr)
+
+    def add(self, *args):
+        return super().add(*args)
+
+    def __getitem__(self, key):
+        # Access attributes from the dominate tag
+        return self.attributes[key]
+
+    def __setitem__(self, key, value):
+        # Set attributes on the dominate tag
+        self.attributes[key] = value
+
+    def __delitem__(self, key):
+        # Delete attributes from the dominate tag
+        if key in self.attributes:
+            del self.attributes[key]
+        else:
+            raise KeyError(f"'{key}' not found")
+
+    def __contains__(self, key):
+        # Check if attribute exists in the dominate tag
+        return key in self.attributes
