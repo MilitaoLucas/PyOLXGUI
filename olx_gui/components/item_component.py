@@ -240,22 +240,3 @@ class InputCheckbox(table):
 
     def add(self, *args):
         return super().add(*args)
-
-    def __getitem__(self, key):
-        # Access attributes from the dominate tag
-        return self.attributes[key]
-
-    def __setitem__(self, key, value):
-        # Set attributes on the dominate tag
-        self.attributes[key] = value
-
-    def __delitem__(self, key):
-        # Delete attributes from the dominate tag
-        if key in self.attributes:
-            del self.attributes[key]
-        else:
-            raise KeyError(f"'{key}' not found")
-
-    def __contains__(self, key):
-        # Check if attribute exists in the dominate tag
-        return key in self.attributes

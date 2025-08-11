@@ -1,0 +1,269 @@
+<!-- #include tool-h3 gui\blocks\tool-h3.htm;image=#image;colspan=1;2; -->
+<tr align="left" name="SNUM_REFINEMENT_NSFF" width="100%">
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;1 -->
+<!-- #include row-table-on gui\blocks\row_table_on.htm;width=100;colspan=#colspan;1 -->
+ <div width="100%">
+<!-- #include tool-help-first-column gui/blocks/tool-help-first-column.htm;help_ext=NoSpherA2_Quick_Buttons;1 -->
+  <b>
+   $spy.NoSpherA2.make_quick_button_gui()
+  </b>
+ </div>
+<!-- #include td-table-off gui\balanced\td-table-off.htm;1 -->
+ <tr align="left" name="SNUM_REFINEMENT_NSFF" width="100%">
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;1 -->
+<!-- #include row-table-on gui\blocks\row_table_on.htm;width=100;colspan=#colspan;1 -->
+  <div width="100%">
+<!-- #include tool-help-first-column gui/blocks/tool-help-first-column.htm;help_ext=NoSpherA2_Options_1;1 -->
+   <td align="left" width="22%">
+    <b>
+     Basis Set
+    </b>
+   </td>
+   <td width="28%">
+    $+
+        html.Snippet(
+            "gui/snippets/input-combo",
+            "name=NoSpherA2_basis@refine",
+            "items=spy.NoSpherA2.getBasisListStr()",
+            "value=spy.GetParam('snum.NoSpherA2.basis_name')",
+            "onchange=spy.NoSpherA2.change_basisset(html.GetValue('~name~'))",
+        )
+    $-
+   </td>
+   <td align="right" width="22%">
+    <b>
+     Method
+    </b>
+   </td>
+   <td width="28%">
+    $+
+        html.Snippet(
+            "gui/snippets/input-combo",
+            "name=NoSpherA2_method@refine",
+            "items=spy.NoSpherA2.get_functional_list()",
+            "value=spy.GetParam('snum.NoSpherA2.method')",
+            "onchange=spy.SetParam('snum.NoSpherA2.method',html.GetValue('~name~'))",
+        )
+    $-
+   </td>
+  </div>
+<!-- #include td-table-off gui\balanced\td-table-off.htm;1 -->
+ </tr>
+ <tr align="left" name="SNUM_REFINEMENT_NSFF" width="100%">
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;1 -->
+<!-- #include row-table-on gui\blocks\row_table_on.htm;width=100;colspan=#colspan;1 -->
+  <div width="100%">
+   <td align="right" width="10%">
+    <b>
+     CPUs
+    </b>
+   </td>
+   <td align="center" width="20%">
+    $+
+        html.Snippet(
+            "gui/snippets/input-combo",
+            "name=NoSpherA2_cpus@refine",
+            "items=spy.NoSpherA2.getCPUListStr()",
+            "value=spy.GetParam('snum.NoSpherA2.ncpus')",
+            "onchange=spy.SetParam('snum.NoSpherA2.ncpus',html.GetValue('~name~'))",
+        )
+    $-
+   </td>
+   <td align="right" width="10%">
+    <b>
+     Mem(Gb)
+    </b>
+   </td>
+   <td align="center" width="20%">
+    $+
+        html.Snippet(
+            "gui/snippets/input-text",
+            "name=NoSpherA2_mem",
+            "value=spy.GetParam('snum.NoSpherA2.mem')",
+            "onchange=spy.SetParam('snum.NoSpherA2.mem',html.GetValue('~name~'))",
+        )
+    $-
+   </td>
+  </div>
+<!-- #include td-table-off gui\balanced\td-table-off.htm;1 -->
+ </tr>
+</tr>
+
+<tr align="left" name="SNUM_REFINEMENT_NSFF" width="100%">
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;1 -->
+<!-- #include row-table-on gui\blocks\row_table_on.htm;width=100;colspan=#colspan;1 -->
+ <div width="100%">
+  <td align="left" width="13%">
+   <b>
+    Charge
+   </b>
+  </td>
+  <td align="left" width="8%">
+   <input bgcolor="spy.GetParam(gui.html.input_bg_colour)" height="17" max="1000" min="-1000" name="SET_CHARGE" onchange="spy.SetParam(snum.NoSpherA2.charge,html.GetValue(~name~))" type="spin" value="$spy.GetParam(snum.NoSpherA2.charge)" width="50"/>
+  </td>
+  <td align="right" width="16%">
+   <b>
+    Multiplicity
+   </b>
+  </td>
+  <td align="right" width="8%">
+   <input bgcolor="spy.GetParam(gui.html.input_bg_colour)" height="17" min="1" name="SET_SNUM_MULTIPLICITY" onchange="spy.SetParam(snum.NoSpherA2.multiplicity,html.GetValue(~name~))" type="spin" value="$spy.GetParam(snum.NoSpherA2.multiplicity)" width="50"/>
+  </td>
+  <td align="left" width="2%">
+   $+
+        html.Snippet(
+            "gui/snippets/input-checkbox-td",
+            "name=Iterative",
+            "label=Iterative",
+            "checked=spy.GetParam('snum.NoSpherA2.full_HAR')",
+            "oncheck=spy.NoSpherA2.toggle_full_HAR()",
+            "bgcolor=GetVar(HtmlTableFirstcolColour)",
+            "onuncheck=spy.NoSpherA2.toggle_full_HAR()",
+        )
+    $-
+  </td>
+  <ignore test="strcmp(spy.GetParam('snum.NoSpherA2.full_HAR'),'False')">
+   <td align="center" width="18%">
+    <b>
+     Max Cycles
+    </b>
+   </td>
+   <td align="left" width="8%">
+    <input bgcolor="spy.GetParam(gui.html.input_bg_colour)" height="17" name="SET_SNUM_MAX_HAR" onchange="spy.SetParam(snum.NoSpherA2.Max_HAR_Cycles,html.GetValue(~name~))" type="spin" value="$spy.GetParam(snum.NoSpherA2.Max_HAR_Cycles)" width="50"/>
+   </td>
+  </ignore>
+  <ignore test="strcmp(spy.GetParam('snum.NoSpherA2.full_HAR'),'True')">
+   <td align="center" width="29%">
+    $+
+        html.Snippet(
+            "gui/snippets/gui-link-button",
+            "value=Update .tsc &amp; .wfn",
+            "onclick=spy.NoSpherA2.launch() >> html.Update()",
+            "bgcolor=GetVar(HtmlTableFirstcolColour)",
+            "td1=''",
+        )
+    $-
+   </td>
+  </ignore>
+ </div>
+<!-- #include td-table-off gui\balanced\td-table-off.htm;1 -->
+</tr>
+
+<tr align="left" name="SNUM_REFINEMENT_NSFF" width="100%">
+<!-- #include tool-help-first-column gui/blocks/tool-help-first-column.htm;help_ext=NoSpherA2_Options_3;1 -->
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;1 -->
+<!-- #include row-table-on gui\blocks\row_table_on.htm;width=100;colspan=#colspan;1 -->
+ <div width="100%">
+  <td align="left" width="13%">
+   <b>
+    Integr. Accuracy
+   </b>
+  </td>
+  <ignore test="not(strcmp(spy.GetParam('snum.NoSpherA2.NoSpherA2_SF'),'True'))">
+   <td align="left" width="16%">
+    $+
+        html.Snippet(
+            "gui/snippets/input-combo",
+            "name=NoSpherA2_becke_accuracy@refine",
+            "items='Low;Normal;High;Max'",
+            "value=spy.GetParam('snum.NoSpherA2.becke_accuracy')",
+            "onchange=spy.SetParam('snum.NoSpherA2.becke_accuracy',html.GetValue('~name~'))",
+        )
+    $-
+   </td>
+  </ignore>
+  $+
+    html.Snippet(
+        "gui/snippets/input-checkbox-td",
+        "name=H_Aniso",
+        "label=H Aniso",
+        "checked=spy.GetParam('snum.NoSpherA2.h_aniso')",
+        "oncheck=spy.SetParam('snum.NoSpherA2.h_aniso','True')",
+        "bgcolor=GetVar(HtmlTableFirstcolColour)",
+        "onuncheck=spy.SetParam('snum.NoSpherA2.h_aniso','False')",
+    )
+$-
+
+$+
+    html.Snippet(
+        "gui/snippets/input-checkbox-td",
+        "name=H_Afix",
+        "label=No Afix",
+        "checked=spy.GetParam('snum.NoSpherA2.h_afix')",
+        "oncheck=spy.SetParam('snum.NoSpherA2.h_afix','True')",
+        "bgcolor=GetVar(HtmlTableFirstcolColour)",
+        "onuncheck=spy.SetParam('snum.NoSpherA2.h_afix','False')",
+    )
+$-
+ </div>
+<!-- #include td-table-off gui\balanced\td-table-off.htm;1 -->
+</tr>
+
+<ignore test="not(strcmp(spy.GetParam('user.NoSpherA2.show_ri_fit'),'False'))">
+ <tr align="left" name="SNUM_REFINEMENT_RIFIT" width="100%">
+<!-- #include tool-help-first-column gui/blocks/tool-help-first-column.htm;help_ext=NoSpherA2_Options_RIFit;1 -->
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;1 -->
+<!-- #include row-table-on gui\blocks\row_table_on.htm;width=100;colspan=#colspan;1 -->
+  <div width="100%">
+   $+
+        html.Snippet(
+            "gui/snippets/input-checkbox-td",
+            "name=Ri_Fit",
+            "label=RI-Fit",
+            "checked=spy.GetParam('snum.NoSpherA2.NoSpherA2_RI_FIT')",
+            "oncheck=spy.SetParam('snum.NoSpherA2.NoSpherA2_RI_FIT','True')>>html.Update()",
+            "bgcolor=GetVar(HtmlTableFirstcolColour)",
+            "onuncheck=spy.SetParam('snum.NoSpherA2.NoSpherA2_RI_FIT','False')>>html.Update()",
+        )
+    $-
+   <ignore>
+    <td align="center" width="30%">
+     <b>
+      Auxiliary Basis
+     </b>
+    </td>
+    <td width="40%">
+     $+
+        html.Snippet(
+            "gui/snippets/input-combo",
+            "name=NoSpherA2_ORCA_RIFIT@refine",
+            "items='combo_basis_fit;def2_universal_jkfit;def2_svp_jkfit;hgbsp3_7;def2_qzvppd_rifit;tzvp_jkfit;cc-pvqz-jkfit'",
+            "value=spy.GetParam('snum.NoSpherA2.auxiliary_basis')",
+            "onchange=spy.SetParam('snum.NoSpherA2.auxiliary_basis',html.GetValue('~name~'))",
+        )
+    $-
+    </td>
+    <td align="left" width="40%">
+     <b>
+     </b>
+    </td>
+   </ignore>
+  </div>
+<!-- #include td-table-off gui\balanced\td-table-off.htm;1 -->
+ </tr>
+</ignore>
+
+<!-- #include ELMO_specific ../util/pyUtil/NoSpherA2/ELMO_specific.htm;help_ext=NoSpherA2Extras;1 -->
+<ignore test="not(spy.NoSpherA2.is_disordered())">
+ <tr align="left" name="SNUM_REFINEMENT_NSFF" width="100%">
+<!-- #include tool-help-first-column gui/blocks/tool-help-first-column.htm;help_ext=NoSpherA2_Options_RIFit;1 -->
+<!-- #include tool-help-first-column gui\blocks\tool-help-first-column.htm;help_ext=#help_ext;1 -->
+<!-- #include row-table-on gui\blocks\row_table_on.htm;width=100;colspan=#colspan;1 -->
+  <div width="100%">
+   <td align="left" width="25%">
+    <b>
+     Grouped Parts
+    </b>
+   </td>
+   $+
+    html.Snippet(
+        "gui/snippets/input-text",
+        "name=NoSpherA2_Disorder_Groups@refine",
+        "value=spy.GetParam('snum.NoSpherA2.Disorder_Groups')",
+        "onchange=spy.SetParam('snum.NoSpherA2.Disorder_Groups',html.GetValue('~name~'))",
+    )
+$-
+  </div>
+<!-- #include td-table-off gui\balanced\td-table-off.htm;1 -->
+ </tr>
+</ignore>
