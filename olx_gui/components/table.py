@@ -29,6 +29,7 @@ class TableConfig:
                   <tr bgcolor="GetVar(HtmlTableGroupBgColour)"> <!-- configurable with tr3_parameters -->
                       <!-- Any content -->
                   </tr>
+                </table>
               </td>
             <!-- those above are part of the TableGroup Class
             </tr>

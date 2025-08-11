@@ -279,8 +279,10 @@ html_final = ignore(*(raw(str(i)) for i in calculate_list), test="spy.GetParam('
 html_final = str(first_comment) + "\n\n" + str(html_final) + "\n" + str(table6)
 pretty_html = BeautifulSoup(str(html_final), 'html.parser').prettify()
 highlighted_html = highlight(str(pretty_html), lexer, formatter)
-load_dotenv()
 
-with open(os.getenv("DEPLOY_PATH"), "w") as f:
+with open("h3-refine_NoSpherA2-extras.htm", "w") as f:
     f.write(str(pretty_html))
+
+with open("/tmp/olexcmd", "w") as f:
+    f.write("html.Update")
 print(highlighted_html)

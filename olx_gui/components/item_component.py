@@ -118,12 +118,14 @@ def to_dict(obj, exclude_fields = None):
 
 def include_comment(name: str, path: str, other_pars: Optional[Iterable[str]] = None, **kwargs):
     pars = []
+    for key, value in kwargs.items():
+        pars.append(f"{key}={value}")
+
     for i in other_pars:
         if not '=' in i:
             pars.append(i)
         else:
             pars.insert(0, i)
-
     final_str = f"{path};" + ";".join(pars)
     return comment(f" #include {name} {final_str} ", **kwargs)
 
