@@ -28,10 +28,9 @@ class Line(tr):
         else:
             self.config = TableConfig()
         self.config.tr1_parameters["NAME"] = name
-        ic(self.config.tr1_parameters)
         for key, value in self.config.tr1_parameters.items():
             self[key] = value
-        self.add_raw_string("\n"+include_comment("tool-help-first-column", r"gui\blocks\tool-help-first-column.htm", help_ext=help_ext, other_pars=["1"]).render(indent=""))
+        self.add(include_comment("tool-help-first-column", r"gui\blocks\tool-help-first-column.htm", help_ext=help_ext, other_pars=["1"]))
         self.td1 = td(self.config.td1_parameters)
         self.table1 = table(self.config.table1_parameters)
         self.tr2 = tr(self.config.tr2_parameters)
