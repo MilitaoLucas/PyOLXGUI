@@ -7,11 +7,13 @@ dependencies = [
     "beautifulsoup4>=4.13.4",
     "dominate",
     "dotenv>=0.9.9",
+    "html2text>=2025.4.15",
     "icecream>=2.1.5",
     "jupyter>=1.1.1",
     "pygments>=2.19.1",
     "pytest>=8.3.5",
     "python-dotenv>=1.1.0",
+    "rich>=14.1.0",
 ]
 
 [tool.uv.workspace]

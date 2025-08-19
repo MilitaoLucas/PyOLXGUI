@@ -1,12 +1,12 @@
 from copy import copy, deepcopy
 from dataclasses import dataclass, asdict
 from typing import Optional, Iterable, Union
-
 from dominate.tags import *
 from dominate.util import raw
 from dominate.tags import comment
 from mistune.helpers import HTML_TAGNAME
-
+from rich.console import Console
+from html2text import html2text
 SPACING = 4
 
 class BaseItemComponent:
@@ -121,11 +121,12 @@ def include_comment(name: str, path: str, other_pars: Optional[Iterable[str]] = 
     for key, value in kwargs.items():
         pars.append(f"{key}={value}")
 
-    for i in other_pars:
-        if not '=' in i:
-            pars.append(i)
-        else:
-            pars.insert(0, i)
+    if not other_pars is None:
+        for i in other_pars:
+            if not '=' in i:
+                pars.append(i)
+            else:
+                pars.insert(0, i)
     final_str = f"{path};" + ";".join(pars)
     return comment(f" #include {name} {final_str} ", **kwargs)
 
@@ -242,3 +243,6 @@ class InputCheckbox(table):
 
     def add(self, *args):
         return super().add(*args)
+
+    def _repr_html_(self):
+        return str(self)

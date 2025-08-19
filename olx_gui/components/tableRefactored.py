@@ -44,11 +44,48 @@ class Line(tr):
         self.td1.add(self.table1)
         self.add(self.td1)
 
-class TableOriginal(tr):
-    """"This represents a group of tables that form a block in the GUI. One example is the NoSpherA2 Options block."""
-    tagname = "tr"
-    def __init__(self, name: str, align="left", **kwargs):
-        super().__init__(**kwargs)
+    @property
+    def pretty(self):
+        return highlight(str(self), LEXER, FORMATTER)
 
-    def add(self, *args):
-        return super().add(*args)
+    def _repr_html_(self):
+        return str(self)
+
+class H3Section:
+    """This represents a group of Line's that form a section in the GUI. One example is the NoSpherA2 Options section."""
+    def __init__(self):
+        self.lines: List[Union[Line, comment]] = []
+        inc_comment = include_comment("tool-h3", r"gui\blocks\tool-h3.htm", ["1"],
+                                               image="#image", colspan="1")
+        self.lines.append(inc_comment)
+
+    def add(self, line: Line):
+        self.lines.append(line)
+
+    def __str__(self):
+        strs = ""
+        for line in self.lines:
+            strs += "\n" + str(line)
+        return strs
+
+    def html_preview(self, highlighting: bool = True):
+        """Previews the entire HTML of the section
+        """
+        if highlighting:
+            print(highlight(str(self), LEXER, FORMATTER))
+        else:
+            print(str(self))
+
+    @property
+    def include_comment(self):
+        return self.lines[0]
+
+    @include_comment.setter
+    def include_comment(self, ic_comment: comment):
+        if isinstance(ic_comment, comment):
+            self.lines[0] = ic_comment
+        else:
+            raise TypeError("The comment should be of type comment.")
+
+    def _repr_html_(self):
+        return str(self)

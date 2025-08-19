@@ -9,3 +9,7 @@ It is very early stage, so if anyone uses it expect bugs. If someone actually us
 every issue is welcome!
 
 I do realize there is something similar in the SVN repository, but I wanted to do something a little different. 
+
+## Features
+- HTML preview is being implemented! You can render HTML on Jupyter for now to have an idea of how the GUI will look on 
+Olex2.
