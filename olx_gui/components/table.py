@@ -1,14 +1,12 @@
-from dataclasses import dataclass, asdict, field
-import dominate
-from dominate.tags import *
-from dominate.util import raw, text, unescape
-from typing import List, Optional, Union, Any
+from dataclasses import dataclass
+from dominate.tags import tr, td, table, comment
+from typing import List, Optional, Union
 import copy
 
 from pygments import highlight
 from pygments.lexers import HtmlLexer
 from pygments.formatters import TerminalFormatter
-from .item_component import BaseItemComponent, SPACING, include_comment, ignore
+from .item_component import include_comment
 
 from bs4 import BeautifulSoup
 LEXER = HtmlLexer()
@@ -38,7 +36,7 @@ class Pars:
 
 
 @dataclass
-class TableConfig(object):
+class TableConfig:
     """
     A table compiles to something like this:
     <tr ALIGN='left' NAME='SNUM_REFINEMENT_NSFF' width='100%'> <!-- configurable with tr1_parameters, this being the default -->
@@ -103,100 +101,85 @@ class TableConfig(object):
     def __getitem__(self, key):
         return getattr(self, key)
 
-class Table:
+class Line(tr):
     """
-    Dynamic table generator for Olex2 GUI framework.
-    Creates HTML tables based on lists of components.
+    A line consists of a single table containing help information.
     """
-    ignore_condition: str
+    tagname = "tr"
+    def __init__(self, name: str, help_ext: Optional["str"]="#help_ext", **kwargs):
+        self.help_ext = help_ext
+        if "config" in kwargs and isinstance(kwargs["config"], TableConfig):
+            self.config = kwargs["config"]
+            kwargs.pop("config")
+        else:
+            self.config = TableConfig()
+        self.config.tr1_parameters.NAME = name
+        self.config.to_dict()
+        super().__init__(self.config.tr1_parameters, **kwargs)
+        self.add(include_comment("tool-help-first-column", r"gui\blocks\tool-help-first-column.htm", help_ext=help_ext, other_pars=["1"]))
+        self.td1 = td(self.config.td1_parameters)
+        self.table1 = table(self.config.table1_parameters)
+        self.tr2 = tr(self.config.tr2_parameters)
+        self.td2 = td(self.config.td2_parameters)
+        self.table2 = table(self.config.table2_parameters)
+        self.tr3 = tr(self.config.tr3_parameters)
+        self.table2.add(self.tr3)
+        self.td2.add(self.table2)
+        self.tr2.add(self.td2)
+        self.table1.add(self.tr2)
+        self.td1.add(self.table1)
+        self.add(self.td1)
+        self.add = self._add
 
-    def __init__(self,
-                 rows: List[List[Union[BaseItemComponent, html_tag, str]]],
-                 header: Optional[List[str]] = None,
-                 config: TableConfig = TableConfig(),
-                 ignore_condition: Optional[str] = None,
-                 comment_obj: Optional[html_tag] = None,
-                 **kwargs):
-        self.rows = rows
-        self.config = config
-        self.header = header
-        self.kwargs = kwargs
-        self.structures = []
-        self.comment_obj = comment_obj
-        self.ignore_tag = False
+    @property
+    def pretty(self):
+        return highlight(str(self), LEXER, FORMATTER)
 
-        if not ignore_condition is None:
-            self.ignore_tag = True
-            self.ignore_condition = ignore_condition
-        self.generate_table_rows()
+    def _repr_html_(self):
+        return str(self)
 
-    def apply_structure(self, comp):
-        if self.comment_obj:
-            fel = tr(self.config.tr1_parameters, self.comment_obj)
-        else: 
-            fel = tr(self.config.tr1_parameters)
-        fel.add(td(self.config.td1_parameters,
-                   table(self.config.table1_parameters,
-                         tr(self.config.tr2_parameters,
-                            comp))))
+    def _add(self, *args):
+        self.tr3.add(*args)
 
-        return fel
-    
-    def apply_group(self, comp):
-        return td(self.config.td2_parameters,
-                  table(self.config.table2_parameters, 
-                        tr(self.config.tr3_parameters, comp)))
+class H3Section:
+    """This represents a group of Line's that form a section in the GUI. One example is the NoSpherA2 Options section."""
+    def __init__(self):
+        self.lines: List[Union[Line, comment]] = []
+        inc_comment = include_comment("tool-h3", r"gui\blocks\tool-h3.htm", ["1"],
+                                      image="#image", colspan="1")
+        self.lines.append(inc_comment)
 
-    def apply_row(self, row):
-        group = td(self.config.td2_parameters).add(
-                table(self.config.table2_parameters)).add( 
-                        tr(self.config.tr3_parameters))
-        with group as row_app:
-            for cell in row:
-                if isinstance(cell, BaseItemComponent):
-                    raw("\n" + str(cell) + "\n")
-                else:
-                    row_app.add(cell)
-
-        return row_app
-
-    def generate_table_rows(self):
-        """Generate all table rows from the component lists."""
-        for row in self.rows:
-            self.structures.append(self.apply_structure(self.apply_row(row)))
-
-    @staticmethod
-    def generate_attributes(attr_dict: dict):
-        """Generate HTML table attributes."""
-        attr_str = ""
-        for key, value in attr_dict.items():
-            if value:  # Only add non-empty attributes
-                attr_str += f" {key}=\"{value}\""
-        return attr_str
+    def add(self, line: Line):
+        self.lines.append(line)
 
     def __str__(self):
-        """Generate the complete HTML table."""
-        html = self.raw_str()            
-        pretty_html = BeautifulSoup(str(html), 'html.parser').prettify().replace("&gt;", ">").replace("&lt;", "<")
-        return pretty_html
+        strs = ""
+        for line in self.lines:
+            strs += "\n" + str(line)
+        return strs
 
-    def raw_str(self):
-        if not self.ignore_tag:
-            html = copy.deepcopy(self.structures[0])
-            for structure in self.structures[1:]:
-                html.add(structure)
+    def html_preview(self, highlighting: bool = True):
+        """Previews the entire HTML of the section
+        """
+        if highlighting:
+            print(highlight(str(self), LEXER, FORMATTER))
         else:
-            html = ignore(test=f"{self.ignore_condition}")
-            for structure in self.structures.copy():
-                html.add(structure)
-        return str(html)
+            print(str(self))
 
-    def __repr__(self):
-        return highlight(str(self.__str__()), LEXER, FORMATTER)
+    @property
+    def include_comment(self):
+        return self.lines[0]
 
-class TableGroup():
-    """
-    This is supposed to imitate the behavior of group_begin.htm block. I want to do self contained blocks to avoid 
-    errors.
-    """
-    pass
+    @include_comment.setter
+    def include_comment(self, ic_comment: comment):
+        if isinstance(ic_comment, comment):
+            self.lines[0] = ic_comment
+        else:
+            raise TypeError("The comment should be of type comment.")
+    #TODO make the preview width customizable
+    def _repr_html_(self):
+        selfrepr = copy.deepcopy(self)
+        for line in selfrepr.lines:
+            if isinstance(line, Line):
+                line.table1["width"] = "50%"
+        return str(selfrepr)
