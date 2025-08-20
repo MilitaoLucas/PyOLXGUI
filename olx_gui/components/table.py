@@ -14,9 +14,31 @@ from bs4 import BeautifulSoup
 LEXER = HtmlLexer()
 FORMATTER = TerminalFormatter()
 
+class Pars:
+    def __init__(self, par: dict):
+        for key in par:
+            setattr(self, key, par[key])
+
+    def __repr__(self):
+        return str(self.__dict__)
+
+    def __iter__(self):
+        for attr, value in self.__dict__.items():
+            yield attr, value
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def pop(self, key):
+        if key in self.__dict__:
+            self.__dict__.pop(key)
+
 
 @dataclass
-class TableConfig:
+class TableConfig(object):
     """
     A table compiles to something like this:
     <tr ALIGN='left' NAME='SNUM_REFINEMENT_NSFF' width='100%'> <!-- configurable with tr1_parameters, this being the default -->
@@ -37,36 +59,50 @@ class TableConfig:
         </td>
     </tr>
     """
-    tr1_parameters: Optional[dict] = None
-    td1_parameters: Optional[dict] = None
-    table1_parameters: Optional[dict] = None
-    tr2_parameters: Optional[dict] = None
-    td2_parameters: Optional[dict] = None
-    table2_parameters: Optional[dict] = None
-    tr3_parameters: Optional[dict] = None
+    tr1_parameters: Optional[Union[dict, Pars]] = None
+    td1_parameters: Optional[Union[dict, Pars]] = None
+    table1_parameters: Optional[Union[dict, Pars]] = None
+    tr2_parameters: Optional[Union[dict, Pars]] = None
+    td2_parameters: Optional[Union[dict, Pars]] = None
+    table2_parameters: Optional[Union[dict, Pars]] = None
+    tr3_parameters: Optional[Union[dict, Pars]] = None
     
     def __post_init__(self):
         if self.tr1_parameters is None:
-            self.tr1_parameters = {"ALIGN": "left", "NAME": "NAME", "width": "100%"}
+            self.tr1_parameters = Pars({"ALIGN": "left", "NAME": "NAME", "width": "100%"})
         
         if self.td1_parameters is None:
-            self.td1_parameters = {"colspan": "#colspan"}
+            self.td1_parameters = Pars({"colspan": "#colspan"})
             
         if self.table1_parameters is None:
-            self.table1_parameters = {"border": "0", "width": "100%", "cellpadding": "0", "cellspacing": "0", "Xbgcolor": "#ffaaaa"}
+            self.table1_parameters = Pars({"border": "0", "width": "100%", "cellpadding": "0", "cellspacing": "0", "Xbgcolor": "#ffaaaa"})
         
         if self.tr2_parameters is None:
-            self.tr2_parameters = {"Xbgcolor": "#ffffaa"}
+            self.tr2_parameters = Pars({"Xbgcolor": "#ffffaa"})
         
         if self.td2_parameters is None:
-            self.td2_parameters = {"width": "100", "align": "left"}
+            self.td2_parameters = Pars({"width": "100", "align": "left"})
         
         if self.table2_parameters is None:
-            self.table2_parameters = {"width": "100%", "cellpadding": "0", "cellspacing": "2"}
+            self.table2_parameters = Pars({"width": "100%", "cellpadding": "0", "cellspacing": "2"})
 
         if self.tr3_parameters is None:
-            self.tr3_parameters = {"bgcolor": "$GetVar(HtmlTableGroupBgColour)"}
-    
+            self.tr3_parameters = Pars({"bgcolor": "$GetVar(HtmlTableGroupBgColour)"})
+
+    def to_dict(self):
+        """
+        Convert every config to a dic for dominate access.
+        """
+        for at, val in self.__dict__.items():
+            if isinstance(val, Pars):
+                self.__dict__[at] = val.__dict__
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
 class Table:
     """
     Dynamic table generator for Olex2 GUI framework.

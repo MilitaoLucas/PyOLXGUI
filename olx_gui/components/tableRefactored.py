@@ -23,14 +23,14 @@ class Line(tr):
     tagname = "tr"
     def __init__(self, name: str, help_ext: Optional["str"]="#help_ext", **kwargs):
         self.help_ext = help_ext
-        super().__init__(**kwargs)
         if "config" in kwargs and isinstance(kwargs["config"], TableConfig):
             self.config = kwargs["config"]
+            kwargs.pop("config")
         else:
             self.config = TableConfig()
-        self.config.tr1_parameters["NAME"] = name
-        for key, value in self.config.tr1_parameters.items():
-            self[key] = value
+        self.config.tr1_parameters.NAME = name
+        self.config.to_dict()
+        super().__init__(self.config.tr1_parameters, **kwargs)
         self.add(include_comment("tool-help-first-column", r"gui\blocks\tool-help-first-column.htm", help_ext=help_ext, other_pars=["1"]))
         self.td1 = td(self.config.td1_parameters)
         self.table1 = table(self.config.table1_parameters)
