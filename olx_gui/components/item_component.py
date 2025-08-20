@@ -175,51 +175,13 @@ def text_input(name: str, value: str = "", label: str = "",
         )
     return font_element
 
-"""
-
-#label
-#width=0
-#height=20
-#manage=false
-#right=false
-#bgcolor=GetVar(HtmlTableBgColour)
-#fgcolor=GetVar(HtmlFontColour)
-#disabled=false
-#oncheck="html.SetData(~name~,'True')"
-#onuncheck="html.SetData(~name~,' ')"
-#custom=GetVar(custom_button)
-  <table cellpadding="0" cellspacing="0">
-    <tr>
-      <td>
-        <font size="$GetVar('HtmlFontSizeControls')">
-          <input
-            type="checkbox"
-            height="#height"
-            fgcolor="#fgcolor"
-            bgcolor="#bgcolor"
-            name="#name"
-            value="#value"
-            checked="false"
-            onclick="#onclick"
-            oncheck="#oncheck"
-            onuncheck="#onuncheck"
-            right="#right"
-            manage="#manage"
-            disabled="#disabled"
-            custom="#custom"
-          >
-        </font>
-      </td>  
-      <td align='left'>
-        <b>#label </b>
-      </td>
-    </tr>
-  </table>
-"""
 # TODO: Make every component as good as this one
-class InputCheckbox(table):
+class InputCheckbox(td):
+    """
+    Use label_left = True to change the label position.
+    """
     tagname = "td"
-    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", **kwargs):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
         if not kwargs:
             kwargs = {"cellpadding": "2",  "cellspacing": "0"}
         super().__init__()
@@ -237,11 +199,81 @@ class InputCheckbox(table):
         self.font.add(self.input)
         self.td_input.add(self.input)
         self.td_label.add(self.label)
-        self.tr.add(self.td_input)
-        self.tr.add(self.td_label)
+        if label_left:
+            self.tr.add(self.td_label)
+            self.tr.add(self.td_input)
+        else:
+            self.tr.add(self.td_input)
+            self.tr.add(self.td_label)
         self.table = table(kwargs)
         self.table.add(self.tr)
         self.add(self.table)
+
+    def _repr_html_(self):
+        return str(self)
+
+class LabeledGeneralComponent(td):
+    """
+    Use label_left = True to change the label position.
+    """
+    tagname = "td"
+    def __init__(self, inp: html_tag, txt_label: Union[str, html_tag] = "",  label_left=False, **kwargs):
+        if not kwargs:
+            kwargs = {"cellpadding": "2",  "cellspacing": "0"}
+        super().__init__()
+        self.tr = tr(valign="middle")
+        self.td_input = td(valign="middle")
+        self.font = font(size="$GetVar('HtmlFontSizeControls')", valign="middle")
+        self.input = inp
+        self.td_label = td(align="left", valign="middle")
+        if isinstance(txt_label, str):
+            self.label = b(txt_label)
+        else:
+            self.label = txt_label
+        self.font.add(self.input)
+        self.td_input.add(self.input)
+        self.td_label.add(self.label)
+        if label_left:
+            self.tr.add(self.td_label)
+            self.tr.add(self.td_input)
+        else:
+            self.tr.add(self.td_input)
+            self.tr.add(self.td_label)
+        self.table = table(kwargs)
+        self.table.add(self.tr)
+        self.add(self.table)
+
+    def _repr_html_(self):
+        return str(self)
+
+class InputCheckbox2(LabeledGeneralComponent):
+    """
+    Use label_left = True to change the label position.
+    """
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+        if not kwargs:
+            kwargs = {"cellpadding": "2",  "cellspacing": "0"}
+
+        self.input = input_(type="checkbox", height=20, width=0, fgcolor="GetVar(HtmlFontColour)",
+                bgcolor="GetVar(HtmlTableBgColour)", name=name, valign="middle"
+                )
+        super().__init__(self.input, txt_label, label_left, **kwargs)
+
+    def _repr_html_(self):
+        return str(self)
+
+class ComboBox(LabeledGeneralComponent):
+    """
+    Use label_left = True to change the label position.
+    """
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+        if not kwargs:
+            kwargs = {"cellpadding": "2",  "cellspacing": "0"}
+
+        self.input = input_(type="combo", height="GetVar(HtmlComboHeight)", readonly="true", fgcolor="GetVar(HtmlFontColour)",
+                bgcolor="GetVar(HtmlInputBgColour)", name=name, valign="middle"
+                )
+        super().__init__(self.input, txt_label, label_left, **kwargs)
 
     def _repr_html_(self):
         return str(self)
