@@ -218,31 +218,30 @@ def text_input(name: str, value: str = "", label: str = "",
 """
 # TODO: Make every component as good as this one
 class InputCheckbox(table):
-    tagname = "table"
+    tagname = "td"
     def __init__(self, name: str, txt_label: Union[str, html_tag] = "", **kwargs):
         if not kwargs:
-            kwargs = {"cellpadding": "0",  "cellspacing": "0"}
-        super().__init__(**kwargs)
-        self.tr = tr()
-        self.td_input = td()
-        self.font = font(size="$GetVar('HtmlFontSizeControls')")
+            kwargs = {"cellpadding": "2",  "cellspacing": "0"}
+        super().__init__()
+        self.tr = tr(valign="middle")
+        self.td_input = td(valign="middle")
+        self.font = font(size="$GetVar('HtmlFontSizeControls')", valign="middle")
         self.input = input_(type="checkbox", height=20, width=0, fgcolor="GetVar(HtmlFontColour)",
-                            bgcolor="GetVar(HtmlTableBgColour)", name=name #, oncheck="spy.SetData(~name~,'True')",onuncheck="html.SetData(~name~,'False')"
+                            bgcolor="GetVar(HtmlTableBgColour)", name=name, valign="middle"
                             )
-        self.td_label = td(align="left")
+        self.td_label = td(align="left", valign="middle")
         if isinstance(txt_label, str):
             self.label = b(txt_label)
         else:
             self.label = txt_label
         self.font.add(self.input)
-        self.td_input.add(self.font)
+        self.td_input.add(self.input)
         self.td_label.add(self.label)
         self.tr.add(self.td_input)
         self.tr.add(self.td_label)
-        self.add(self.tr)
-
-    def add(self, *args):
-        return super().add(*args)
+        self.table = table(kwargs)
+        self.table.add(self.tr)
+        self.add(self.table)
 
     def _repr_html_(self):
         return str(self)

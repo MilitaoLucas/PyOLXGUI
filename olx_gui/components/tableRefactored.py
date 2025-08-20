@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass, asdict, field
 import dominate
 from dominate.tags import *
@@ -43,6 +44,7 @@ class Line(tr):
         self.table1.add(self.tr2)
         self.td1.add(self.table1)
         self.add(self.td1)
+        self.add = self._add
 
     @property
     def pretty(self):
@@ -50,6 +52,9 @@ class Line(tr):
 
     def _repr_html_(self):
         return str(self)
+
+    def _add(self, *args):
+        self.tr3.add(*args)
 
 class H3Section:
     """This represents a group of Line's that form a section in the GUI. One example is the NoSpherA2 Options section."""
@@ -86,6 +91,10 @@ class H3Section:
             self.lines[0] = ic_comment
         else:
             raise TypeError("The comment should be of type comment.")
-
+    #TODO make the preview width customizable
     def _repr_html_(self):
-        return str(self)
+        selfrepr = deepcopy(self)
+        for line in selfrepr.lines:
+            if isinstance(line, Line):
+                line.table1["width"] = "50%"
+        return str(selfrepr)
