@@ -7,6 +7,7 @@ from dominate.tags import comment
 from mistune.helpers import HTML_TAGNAME
 from rich.console import Console
 from html2text import html2text
+from icecream import ic
 SPACING = 4
 
 def to_dict(obj, exclude_fields = None):
@@ -22,9 +23,9 @@ def to_dict(obj, exclude_fields = None):
 
 def add_default(pardict, kwargs):
     for k in pardict:
-        if k in kwargs:
-            pardict[k] = kwargs[k]
-    return pardict
+        if k not in kwargs:
+            kwargs[k] = pardict[k]
+    return kwargs
 
 def include_comment(name: str, path: str, other_pars: Optional[Iterable[str]] = None, **kwargs):
     pars = []
@@ -50,40 +51,17 @@ class ignore(html_tag):
     """
     tagname = 'ignore'
 
-def input_button(name: str, value: str, onclick: str, height: str = "20", type: str = "button", **kwargs):
-    return input_(type=type, name=name, value=value, height=height, onclick=onclick, bgcolor="#8C8C8F",
-              fgcolor="#ffffff", fit="false", flat="GetVar(linkButton.flat)", disabled="false",
-              custom="GetVar(custom_button)",  **kwargs)
 
-def text_input(name: str, value: str = "", label: str = "",
-               height: str = "GetVar('HtmlInputHeight')", manage: str = "false",
-               password: str = "false", multiline: str = "false", disabled: str = "false",
-               bgcolor: str = "GetVar('HtmlInputBgColour')",
-               fgcolor: str = "GetVar(HtmlFontColour)", onchange: str = "",
-               onleave: str = "", onreturn: str = "", **kwargs):
-    """
-    Creates a text input element using dominate tags.
-    """
-    # with font(size="$GetVar('HtmlFontSizeControls')") as font_element:
-    font_element = input_(
-            type="text",
-            height=height,
-            bgcolor=bgcolor,
-            fgcolor=fgcolor,
-            valign="center",
-            name=name,
-            label=label,
-            value=value,
-            onchange=onchange,
-            onleave=onleave,
-            onreturn=onreturn,
-            manage=manage,
-            password=password,
-            multiline=multiline,
-            disabled=disabled,
-            **kwargs
-        )
-    return font_element
+
+
+def verify_functions(args: dict) -> None:
+    args2 = {k: str(v).strip() for k, v in args.items()}
+    for k, v in args2.items():
+        if v.startswith("spy") or v.startswith("snum"):
+            if v.count("(") != v.count(")"):
+                raise ValueError(f"Olex2 functions have to be closed to be valid. {k} contains an invalid amount of "
+                                 f"brackets.")
+
 
 class LabeledGeneralComponent(td):
     """
@@ -96,12 +74,22 @@ class LabeledGeneralComponent(td):
         super().__init__()
         self.label_left = label_left
         self.tr = tr(valign="middle")
-        self.td_input = td(valign="middle")
+        input_width = "100%"
+        if "input_width" in kwargs:
+            input_width = kwargs["input_width"]
+            kwargs.pop("input_width")
+
+        label_width = None
+        if "label_width" in kwargs:
+            label_width = kwargs["label_width"]
+            kwargs.pop(label_width)
+
+        self.td_input = td(valign="middle", width=input_width)
         self.font = font(size="$GetVar('HtmlFontSizeControls')", valign="middle")
         self.input = inp
         if not txt_label is None:
-            self._add_label(txt_label)
-
+            self._add_label(txt_label, label_width)
+        verify_functions(kwargs)
         self.font.add(self.input)
         self.td_input.add(self.input)
 
@@ -109,8 +97,8 @@ class LabeledGeneralComponent(td):
         self.table.add(self.tr)
         self.add(self.table)
 
-    def _add_label(self, txt_label: Union[str, html_tag]):
-        self.td_label = td(align="left", valign="middle")
+    def _add_label(self, txt_label: Union[str, html_tag], label_width: Optional[str] = None):
+        self.td_label = td(align="left", valign="middle", width=label_width)
         if isinstance(txt_label, str):
             self.label = b(txt_label)
         else:
@@ -134,14 +122,20 @@ class InputCheckbox(LabeledGeneralComponent):
         pardict = dict(name=name,
                        type="checkbox",
                        height=20,
-                       width=0,
                        fgcolor="GetVar(HtmlFontColour)",
                        bgcolor="GetVar(HtmlTableBgColour)",
-                       valign="middle"
+                       valign="middle",
                        )
+        verify_functions(kwargs)
+        tdwidth = None
+        if "tdwidth" in kwargs:
+            tdwidth = kwargs["tdwidth"]
+            kwargs.pop("tdwidth")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
         super().__init__(self.input, txt_label, label_left)
+        if not tdwidth is None:
+            self["width"] = tdwidth
 
 class ComboBox(LabeledGeneralComponent):
     """
@@ -151,15 +145,23 @@ class ComboBox(LabeledGeneralComponent):
         pardict = dict(
             name=name,
             type="combo",
+            width="100%",
             height="GetVar(HtmlComboHeight)",
             readonly="true",
             fgcolor="GetVar(HtmlFontColour)",
             bgcolor="GetVar(HtmlInputBgColour)",
             valign="middle"
         )
+        verify_functions(kwargs)
+        tdwidth = None
+        if "tdwidth" in kwargs:
+            tdwidth = kwargs["tdwidth"]
+            kwargs.pop("tdwidth")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
         super().__init__(self.input, txt_label, label_left)
+        if not tdwidth is None:
+            self["width"] = tdwidth
 
 class Button(LabeledGeneralComponent):
     def __init__(self, name: str, **kwargs):
@@ -175,10 +177,45 @@ class Button(LabeledGeneralComponent):
             flat="fasle",
             disabled="false",
         )
+        verify_functions(kwargs)
+        tdwidth = None
+        if "tdwidth" in kwargs:
+            tdwidth = kwargs["tdwidth"]
+            kwargs.pop("tdwidth")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
         super().__init__(self.input)
 
+        if not tdwidth is None:
+            self["width"] = tdwidth
 
 
-
+class InputText(LabeledGeneralComponent):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+        pardict = dict(
+            name = name,
+            height = "GetVar('HtmlInputHeight')",
+            manage = "false",
+            password = "false",
+            multiline = "false",
+            disabled = "false",
+            bgcolor = "GetVar('HtmlInputBgColour')",
+            fgcolor = "GetVar(HtmlFontColour)",
+            value = "#value",
+            width = "100%",
+            onclick = "#onclick",
+            fit = "false",
+            flat = "fasle",
+            type = "text",
+            valign = "center",
+        )
+        verify_functions(kwargs)
+        tdwidth = None
+        if "tdwidth" in kwargs:
+            tdwidth = kwargs["tdwidth"]
+            kwargs.pop("tdwidth")
+        pardict = add_default(pardict, kwargs)
+        self.input = input_(pardict)
+        super().__init__(self.input, txt_label, label_left)
+        if not tdwidth is None:
+            self["width"] = tdwidth

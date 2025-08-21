@@ -1,12 +1,15 @@
 from dataclasses import dataclass
+from math import floor
+
 from dominate.tags import tr, td, table, comment
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Iterable
 import copy
 
 from pygments import highlight
 from pygments.lexers import HtmlLexer
 from pygments.formatters import TerminalFormatter
-from .item_component import include_comment
+from .item_component import include_comment, LabeledGeneralComponent
+from icecream import ic
 
 from bs4 import BeautifulSoup
 LEXER = HtmlLexer()
@@ -64,6 +67,7 @@ class TableConfig:
     td2_parameters: Optional[Union[dict, Pars]] = None
     table2_parameters: Optional[Union[dict, Pars]] = None
     tr3_parameters: Optional[Union[dict, Pars]] = None
+    children_width: Optional[str] = None
     
     def __post_init__(self):
         if self.tr1_parameters is None:
@@ -95,6 +99,14 @@ class TableConfig:
             if isinstance(val, Pars):
                 self.__dict__[at] = val.__dict__
 
+    def to_pars(self):
+        """
+        Convert every config to Pars
+        """
+        for at, val in self.__dict__.items():
+            if isinstance(val, dict):
+                self.__dict__[at] = Pars(val)
+
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
@@ -113,7 +125,7 @@ class Line(tr):
             kwargs.pop("config")
         else:
             self.config = TableConfig()
-        self.config.tr1_parameters.NAME = name
+        self.config.tr1_parameters["NAME"] = name
         self.config.to_dict()
         super().__init__(self.config.tr1_parameters, **kwargs)
         self.add(include_comment("tool-help-first-column", r"gui\blocks\tool-help-first-column.htm", help_ext=help_ext, other_pars=["1"]))
@@ -139,7 +151,27 @@ class Line(tr):
         return str(self)
 
     def _add(self, *args):
-        self.tr3.add(*args)
+        children = self.tr3.children + list(args)
+        self.children_width = calculate_useful_size(children)
+        fixed_args = list(args)
+        for k in fixed_args:
+            if isinstance(k, LabeledGeneralComponent) and not "width" in k.attributes:
+                k["width"] = self.children_width
+        self.tr3.add(fixed_args)
+
+def calculate_useful_size(objs: list) -> str:
+    total_nitems = len(objs)
+    already_set = 0
+    used_perc = 0
+    for k in objs:
+        if not isinstance(k, LabeledGeneralComponent):
+            return "100%"
+        if "width" in k.attributes:
+            used_perc += float(k.attributes["width"].replace("%", ""))/100
+            already_set += 1
+    remaining = total_nitems - already_set
+    return f"{floor((1-used_perc)*100/remaining)}%"
+
 
 class H3Section:
     """This represents a group of Line's that form a section in the GUI. One example is the NoSpherA2 Options section."""
@@ -148,6 +180,7 @@ class H3Section:
         inc_comment = include_comment("tool-h3", r"gui\blocks\tool-h3.htm", ["1"],
                                       image="#image", colspan="1")
         self.lines.append(inc_comment)
+        self.preview_width = "50%"
 
     def add(self, line: Line):
         self.lines.append(line)
@@ -181,5 +214,5 @@ class H3Section:
         selfrepr = copy.deepcopy(self)
         for line in selfrepr.lines:
             if isinstance(line, Line):
-                line.table1["width"] = "50%"
+                line.table1["width"] = self.preview_width
         return str(selfrepr)
