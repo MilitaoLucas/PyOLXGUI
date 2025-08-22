@@ -68,9 +68,9 @@ class LabeledGeneralComponent(td):
     Use label_left = True to change the label position.
     """
     tagname = "td"
-    def __init__(self, inp: html_tag, txt_label: Optional[Union[str, html_tag]] = None, label_left=False, **kwargs):
-        if not kwargs:
-            kwargs = {"cellpadding": "2",  "cellspacing": "0"}
+    def __init__(self, inp: html_tag, txt_label: Optional[Union[str, html_tag]] = None, label_left: bool = False,
+                 label_top: bool = True, **kwargs):
+        kwargs = add_default({"cellpadding": "2",  "cellspacing": "0"}, kwargs)
         super().__init__()
         self.label_left = label_left
         self.tr = tr(valign="middle")
@@ -79,33 +79,60 @@ class LabeledGeneralComponent(td):
             input_width = kwargs["input_width"]
             kwargs.pop("input_width")
 
-        self.td = td(valign="middle", width=input_width)
+        label_width = None
+        if "label_width" in kwargs:
+            label_width = kwargs["label_width"]
+            kwargs.pop("label_width")
+
+        self.td_input = td(valign="middle", width=input_width)
         self.font = font(size="$GetVar('HtmlFontSizeControls')", valign="middle")
         self.input = inp
         if not txt_label is None:
-            self._add_label(txt_label)
+            self._add_label(txt_label, label_top, label_width=label_width)
         verify_functions(kwargs)
         self.font.add(self.input)
-        self.td.add(self.label, self.input)
-        self.tr.add(self.td)
+        self.td_input.add(self.input)
         self.table = table(kwargs)
         self.table.add(self.tr)
         self.add(self.table)
+        self.is_resizable = True
+        self.precise_width = 0.0
 
-    def _add_label(self, txt_label: Union[str, html_tag]):
+    def _add_label(self, txt_label: Union[str, html_tag], label_top: bool = True, label_width: Optional[str] = None):
         if isinstance(txt_label, str):
             self.label = b(txt_label)
         else:
             self.label = txt_label
+        if not label_top:
+            self.td_label = td(align="left", valign="middle", width=label_width)
+            self.td_label.add(self.label)
+            if self.label_left:
+                self.tr.add(self.td_label)
+                self.tr.add(self.td_input)
+            else:
+                self.tr.add(self.td_input)
+                self.tr.add(self.td_label)
+        else:
+            self.td_input.add(self.label)
+            self.tr.add(self.td_input)
 
     def _repr_html_(self):
         return str(self)
+
+    @property
+    def resizable(self):
+        return self.is_resizable
+
+    @resizable.setter
+    def resizable(self, other: bool):
+        self.is_resizable = other
 
 class InputCheckbox(LabeledGeneralComponent):
     """
     Use label_left = True to change the label position.
     """
-    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left: bool = True,
+                 label_top: bool = False, **kwargs):
         pardict = dict(name=name,
                        type="checkbox",
                        height=20,
@@ -118,17 +145,26 @@ class InputCheckbox(LabeledGeneralComponent):
         if "tdwidth" in kwargs:
             tdwidth = kwargs["tdwidth"]
             kwargs.pop("tdwidth")
+
+        label_width = None
+        if "label_width" in kwargs:
+            label_width = kwargs["label_width"]
+            kwargs.pop("label_width")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
-        super().__init__(self.input, txt_label, label_left)
+        super().__init__(self.input, txt_label, label_left, label_top, label_width=label_width, cellpadding="0",
+                         cellspacing="0", input_width=None)
         if not tdwidth is None:
             self["width"] = tdwidth
+            self.resizable = False
+        self["align"] = "center"
 
 class ComboBox(LabeledGeneralComponent):
     """
     Use label_left = True to change the label position.
     """
-    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left: bool = False,
+                 label_top: bool = True, **kwargs):
         pardict = dict(
             name=name,
             type="combo",
@@ -146,9 +182,10 @@ class ComboBox(LabeledGeneralComponent):
             kwargs.pop("tdwidth")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
-        super().__init__(self.input, txt_label, label_left)
+        super().__init__(self.input, txt_label, label_left, label_top)
         if not tdwidth is None:
             self["width"] = tdwidth
+            self.resizable = False
 
 class Button(LabeledGeneralComponent):
     def __init__(self, name: str, **kwargs):
@@ -175,10 +212,12 @@ class Button(LabeledGeneralComponent):
 
         if not tdwidth is None:
             self["width"] = tdwidth
+            self.resizable = False
 
 
 class InputText(LabeledGeneralComponent):
-    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left: bool = False,
+                 label_top: bool = True, **kwargs):
         pardict = dict(
             name = name,
             height = "GetVar('HtmlInputHeight')",
@@ -203,12 +242,14 @@ class InputText(LabeledGeneralComponent):
             kwargs.pop("tdwidth")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
-        super().__init__(self.input, txt_label, label_left)
+        super().__init__(self.input, txt_label, label_left, label_top)
         if not tdwidth is None:
             self["width"] = tdwidth
+            self.resizable = False
 
 class InputSpinner(LabeledGeneralComponent):
-    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left: bool = False,
+                 label_top: bool = True, **kwargs):
         pardict = dict(
             type="spin",
             height="GetVar('HtmlComboHeight')",
@@ -218,7 +259,6 @@ class InputSpinner(LabeledGeneralComponent):
             min="-1000",
             max="1000",
             name=name,
-            width="100%",
             setdefault="false",
             disabled="false",
             readonly="false",
@@ -233,6 +273,37 @@ class InputSpinner(LabeledGeneralComponent):
             kwargs.pop("tdwidth")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
-        super().__init__(self.input, txt_label, label_left)
+        super().__init__(self.input, txt_label, label_left, label_top)
         if not tdwidth is None:
             self["width"] = tdwidth
+            self.resizable = False
+
+class InputLinkButton(LabeledGeneralComponent):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left: bool = False,
+                 label_top: bool = True, **kwargs):
+        pardict = dict(
+            type="button",
+            name=name,
+            bgcolor="GetVar(linkButton.bgcolor)",
+            fgcolor="fgcolor=GetVar(linkButton.fgcolor)",
+            fit="false",
+            flat="GetVar(linkButton.flat)",
+            custom="GetVar(custom_button)",
+        )
+        verify_functions(kwargs)
+        tdwidth = None
+        if "tdwidth" in kwargs:
+            tdwidth = kwargs["tdwidth"]
+            kwargs.pop("tdwidth")
+        pardict = add_default(pardict, kwargs)
+        self.input = b(input_(pardict))
+        super().__init__(self.input, txt_label, label_left, label_top)
+        if not tdwidth is None:
+            self["width"] = tdwidth
+            self.resizable = False
+
+class Cycle(div):
+    """
+    This works by cycling between components when ignore is active. This will keep track of the width so the autoresizing
+    works.
+    """

@@ -8,7 +8,7 @@ import copy
 from pygments import highlight
 from pygments.lexers import HtmlLexer
 from pygments.formatters import TerminalFormatter
-from .item_component import include_comment, LabeledGeneralComponent
+from .item_component import include_comment, LabeledGeneralComponent, ignore
 from icecream import ic
 
 from bs4 import BeautifulSoup
@@ -153,20 +153,25 @@ class Line(tr):
     def _add(self, *args):
         children = self.tr3.children + list(args)
         self.children_width = calculate_useful_size(children)
-        fixed_args = list(args)
-        for k in fixed_args:
+        for k in range(len(self.tr3.children)):
+            self.tr3[k].set_attribute("width", self.children_width)
+
+        for k in args:
             if isinstance(k, LabeledGeneralComponent) and not "width" in k.attributes:
                 k["width"] = self.children_width
-        self.tr3.add(fixed_args)
+            self.tr3.add(k)
+
 
 def calculate_useful_size(objs: list) -> str:
     total_nitems = len(objs)
     already_set = 0
     used_perc = 0
     for k in objs:
+        if isinstance(k, ignore):
+            k = k[0]
         if not isinstance(k, LabeledGeneralComponent):
             return "100%"
-        if "width" in k.attributes:
+        if "width" in k.attributes and not k.resizable:
             used_perc += float(k.attributes["width"].replace("%", ""))/100
             already_set += 1
     remaining = total_nitems - already_set
