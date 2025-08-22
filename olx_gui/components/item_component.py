@@ -79,37 +79,24 @@ class LabeledGeneralComponent(td):
             input_width = kwargs["input_width"]
             kwargs.pop("input_width")
 
-        label_width = None
-        if "label_width" in kwargs:
-            label_width = kwargs["label_width"]
-            kwargs.pop(label_width)
-
-        self.td_input = td(valign="middle", width=input_width)
+        self.td = td(valign="middle", width=input_width)
         self.font = font(size="$GetVar('HtmlFontSizeControls')", valign="middle")
         self.input = inp
         if not txt_label is None:
-            self._add_label(txt_label, label_width)
+            self._add_label(txt_label)
         verify_functions(kwargs)
         self.font.add(self.input)
-        self.td_input.add(self.input)
-
+        self.td.add(self.label, self.input)
+        self.tr.add(self.td)
         self.table = table(kwargs)
         self.table.add(self.tr)
         self.add(self.table)
 
-    def _add_label(self, txt_label: Union[str, html_tag], label_width: Optional[str] = None):
-        self.td_label = td(align="left", valign="middle", width=label_width)
+    def _add_label(self, txt_label: Union[str, html_tag]):
         if isinstance(txt_label, str):
             self.label = b(txt_label)
         else:
             self.label = txt_label
-        self.td_label.add(self.label)
-        if self.label_left:
-            self.tr.add(self.td_label)
-            self.tr.add(self.td_input)
-        else:
-            self.tr.add(self.td_input)
-            self.tr.add(self.td_label)
 
     def _repr_html_(self):
         return str(self)
@@ -208,6 +195,36 @@ class InputText(LabeledGeneralComponent):
             flat = "fasle",
             type = "text",
             valign = "center",
+        )
+        verify_functions(kwargs)
+        tdwidth = None
+        if "tdwidth" in kwargs:
+            tdwidth = kwargs["tdwidth"]
+            kwargs.pop("tdwidth")
+        pardict = add_default(pardict, kwargs)
+        self.input = input_(pardict)
+        super().__init__(self.input, txt_label, label_left)
+        if not tdwidth is None:
+            self["width"] = tdwidth
+
+class InputSpinner(LabeledGeneralComponent):
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left=False, **kwargs):
+        pardict = dict(
+            type="spin",
+            height="GetVar('HtmlComboHeight')",
+            bgcolor="GetVar(HtmlInputBgColour)",
+            fgcolor="GetVar(HtmlFontColour)",
+            valign="center",
+            min="-1000",
+            max="1000",
+            name=name,
+            width="100%",
+            setdefault="false",
+            disabled="false",
+            readonly="false",
+            onchangealways="false",
+            manage="false",
+            custom="arrow_width: -10",
         )
         verify_functions(kwargs)
         tdwidth = None
