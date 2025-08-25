@@ -56,8 +56,9 @@ class ignore(html_tag):
 
 def verify_functions(args: dict) -> None:
     args2 = {k: str(v).strip() for k, v in args.items()}
+    function_starts = ["spy", "snum", "strcmp"]
     for k, v in args2.items():
-        if v.startswith("spy") or v.startswith("snum"):
+        if any([v.startswith(x) for x in function_starts]):
             if v.count("(") != v.count(")"):
                 raise ValueError(f"Olex2 functions have to be closed to be valid. {k} contains an invalid amount of "
                                  f"brackets.")
@@ -91,7 +92,7 @@ class LabeledGeneralComponent(td):
             self._add_label(txt_label, label_top, label_width=label_width)
         verify_functions(kwargs)
         self.font.add(self.input)
-        self.td_input.add(self.input)
+        self.td_input.add(self.font)
         self.table = table(kwargs)
         self.table.add(self.tr)
         self.add(self.table)
@@ -131,7 +132,7 @@ class InputCheckbox(LabeledGeneralComponent):
     """
     Use label_left = True to change the label position.
     """
-    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left: bool = True,
+    def __init__(self, name: str, txt_label: Union[str, html_tag] = "", label_left: bool = False,
                  label_top: bool = False, **kwargs):
         pardict = dict(name=name,
                        type="checkbox",
@@ -152,7 +153,7 @@ class InputCheckbox(LabeledGeneralComponent):
             kwargs.pop("label_width")
         pardict = add_default(pardict, kwargs)
         self.input = input_(pardict)
-        super().__init__(self.input, txt_label, label_left, label_top, label_width=label_width, cellpadding="0",
+        super().__init__(self.input, txt_label, label_left, label_top, label_width=label_width, cellpadding="2",
                          cellspacing="0", input_width=None)
         if not tdwidth is None:
             self["width"] = tdwidth
@@ -285,7 +286,7 @@ class InputLinkButton(LabeledGeneralComponent):
             type="button",
             name=name,
             bgcolor="GetVar(linkButton.bgcolor)",
-            fgcolor="fgcolor=GetVar(linkButton.fgcolor)",
+            fgcolor="GetVar(linkButton.fgcolor)",
             fit="false",
             flat="GetVar(linkButton.flat)",
             custom="GetVar(custom_button)",
@@ -296,7 +297,10 @@ class InputLinkButton(LabeledGeneralComponent):
             tdwidth = kwargs["tdwidth"]
             kwargs.pop("tdwidth")
         pardict = add_default(pardict, kwargs)
+        for k, it in pardict.items():
+            pardict[k] = raw(it)
         self.input = b(input_(pardict))
+        # self.input = font(b(input_(pardict)), size="$GetVar('HtmlFontSizeControls')")
         super().__init__(self.input, txt_label, label_left, label_top)
         if not tdwidth is None:
             self["width"] = tdwidth
@@ -307,3 +311,25 @@ class Cycle(div):
     This works by cycling between components when ignore is active. This will keep track of the width so the autoresizing
     works.
     """
+    tagname="cycle"
+    def __init__(self, componentA: html_tag, componentB: html_tag, condition: str):
+        """
+        componentA is shown if the condition is evaluated to true. If not, componentB is shown.
+        """
+        verify_functions({"condition": condition})
+        super().__init__()
+        greater_width = 0
+        if componentA.tagname == "td":
+            if "width" in componentA.attributes:
+                greater_width = int(componentA.attributes["width"].replace("%", ""))
+                componentA.attributes.pop("width")
+
+        if componentB.tagname == "td":
+            if "width" in componentB.attributes and (widthb := componentB["width"].replace("%", "")):
+                componentB.attributes.pop("width")
+                greater_width = widthb
+
+        self["width"] = greater_width
+        self.add(ignore(componentA, test=condition),
+                 ignore(componentB, test=f"not {condition}"))
+

@@ -8,7 +8,7 @@ import copy
 from pygments import highlight
 from pygments.lexers import HtmlLexer
 from pygments.formatters import TerminalFormatter
-from .item_component import include_comment, LabeledGeneralComponent, ignore
+from .item_component import include_comment, LabeledGeneralComponent, ignore, Cycle
 from icecream import ic
 
 from bs4 import BeautifulSoup
@@ -147,6 +147,10 @@ class Line(tr):
     def pretty(self):
         return highlight(str(self), LEXER, FORMATTER)
 
+    @property
+    def last_component(self):
+        return self.tr3
+
     def _repr_html_(self):
         return str(self)
 
@@ -169,6 +173,9 @@ def calculate_useful_size(objs: list) -> str:
     for k in objs:
         if isinstance(k, ignore):
             k = k[0]
+
+        if isinstance(k, Cycle):
+            k = k[0][0]
         if not isinstance(k, LabeledGeneralComponent):
             return "100%"
         if "width" in k.attributes and not k.resizable:
@@ -214,10 +221,14 @@ class H3Section:
             self.lines[0] = ic_comment
         else:
             raise TypeError("The comment should be of type comment.")
-    #TODO make the preview width customizable
+
     def _repr_html_(self):
         selfrepr = copy.deepcopy(self)
         for line in selfrepr.lines:
             if isinstance(line, Line):
                 line.table1["width"] = self.preview_width
+                for k, component in enumerate(line.last_component):
+                    if isinstance(component, Cycle):
+                        component = component.children[0][0]
+                        line.last_component.children[k] = component
         return str(selfrepr)
