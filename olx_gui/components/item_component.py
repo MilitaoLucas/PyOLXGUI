@@ -90,6 +90,8 @@ class LabeledGeneralComponent(td):
         self.input = inp
         if not txt_label is None:
             self._add_label(txt_label, label_top, label_width=label_width)
+        else:
+            self.tr.add(self.td_input)
         verify_functions(kwargs)
         self.font.add(self.input)
         self.td_input.add(self.font)
@@ -306,6 +308,12 @@ class InputLinkButton(LabeledGeneralComponent):
             self["width"] = tdwidth
             self.resizable = False
 
+
+class Fill(td):
+    tagname = "td"
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class Cycle(div):
     """
     This works by cycling between components when ignore is active. This will keep track of the width so the autoresizing
@@ -333,3 +341,10 @@ class Cycle(div):
         self.add(ignore(componentA, test=condition),
                  ignore(componentB, test=f"not {condition}"))
 
+class Ignore(Cycle):
+    """
+    This gracefully ignores a component in a way that its space is filled by nothingness. It makes the layout consistent.
+    """
+    def __init__(self, component: html_tag, condition: str):
+        componentB = LabeledGeneralComponent(p())
+        super().__init__(component, componentB, condition)
