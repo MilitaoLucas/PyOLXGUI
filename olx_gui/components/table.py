@@ -37,7 +37,7 @@ class Pars:
 
 
 @dataclass
-class TableConfig:
+class RowConfig:
     """
     A table compiles to something like this:
     <tr ALIGN='left' NAME='SNUM_REFINEMENT_NSFF' width='100%'> <!-- configurable with tr1_parameters, this being the default -->
@@ -111,18 +111,18 @@ class TableConfig:
     def __getitem__(self, key):
         return getattr(self, key)
 
-class Line(tr):
+class Row(tr):
     """
     A line consists of a single table containing help information.
     """
     tagname = "tr"
     def __init__(self, name: str, help_ext: Optional["str"]="#help_ext", **kwargs):
         self.help_ext = help_ext
-        if "config" in kwargs and isinstance(kwargs["config"], TableConfig):
+        if "config" in kwargs and isinstance(kwargs["config"], RowConfig):
             self.config = kwargs["config"]
             kwargs.pop("config")
         else:
-            self.config = TableConfig()
+            self.config = RowConfig()
         self.config.tr1_parameters["NAME"] = name
         self.config.to_dict()
         super().__init__(self.config.tr1_parameters, **kwargs)
@@ -184,15 +184,15 @@ def calculate_useful_size(objs: list) -> str:
 
 
 class H3Section:
-    """This represents a group of Line's that form a section in the GUI. One example is the NoSpherA2 Options section."""
+    """This represents a group of Row's that form a section in the GUI. One example is the NoSpherA2 Options section."""
     def __init__(self):
-        self.lines: List[Union[Line, comment]] = []
+        self.lines: List[Union[Row, comment]] = []
         inc_comment = include_comment("tool-h3", r"gui\blocks\tool-h3.htm", ["1"],
                                       image="#image", colspan="1")
         self.lines.append(inc_comment)
         self.preview_width = "50%"
 
-    def add(self, line: Line):
+    def add(self, line: Row):
         self.lines.append(line)
 
     def __str__(self):
@@ -223,7 +223,7 @@ class H3Section:
     def _repr_html_(self):
         selfrepr = copy.deepcopy(self)
         for line in selfrepr.lines:
-            if isinstance(line, Line):
+            if isinstance(line, Row):
                 line.table1["width"] = self.preview_width
                 for k, component in enumerate(line.last_component):
                     if isinstance(component, Cycle):
