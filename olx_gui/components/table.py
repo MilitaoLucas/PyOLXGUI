@@ -2,16 +2,14 @@ from dataclasses import dataclass
 from math import floor
 
 from dominate.tags import tr, td, table, comment
-from typing import List, Optional, Union, Iterable
+from typing import List, Optional, Union
 import copy
 
 from pygments import highlight
 from pygments.lexers import HtmlLexer
 from pygments.formatters import TerminalFormatter
 from .item_component import include_comment, LabeledGeneralComponent, ignore, Cycle
-from icecream import ic
 
-from bs4 import BeautifulSoup
 LEXER = HtmlLexer()
 FORMATTER = TerminalFormatter()
 
