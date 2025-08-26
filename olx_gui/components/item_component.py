@@ -292,12 +292,17 @@ class InputLinkButton(LabeledGeneralComponent):
         if "tdwidth" in kwargs:
             tdwidth = kwargs["tdwidth"]
             kwargs.pop("tdwidth")
+
+        align = None
+        if "align" in kwargs:
+            align = kwargs["align"]
+            kwargs.pop("align")
         pardict = add_default(pardict, kwargs)
         for k, it in pardict.items():
             pardict[k] = raw(it)
         self.input = b(input_(pardict))
         # self.input = font(b(input_(pardict)), size="$GetVar('HtmlFontSizeControls')")
-        super().__init__(self.input, txt_label, label_left, label_top)
+        super().__init__(self.input, txt_label, label_left, label_top, align=align)
         if not tdwidth is None:
             self["width"] = tdwidth
             self.resizable = False
