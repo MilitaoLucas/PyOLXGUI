@@ -168,16 +168,21 @@ def calculate_useful_size(objs: list) -> str:
     total_nitems = len(objs)
     already_set = 0
     used_perc = 0
-    if total_nitems > 2:
-        return "100%"
+    if total_nitems == 1:
+        k = objs[0]
+
+        if isinstance(k, ignore):
+            k = k[0]
+        elif isinstance(k, Cycle):
+            k = k[0][0]
+        return k.attributes["width"]
 
     for k in objs:
         if isinstance(k, ignore):
             k = k[0]
-
-        if isinstance(k, Cycle):
+        elif isinstance(k, Cycle):
             k = k[0][0]
-        if not isinstance(k, LabeledGeneralComponent):
+        elif not isinstance(k, LabeledGeneralComponent):
             return "100%"
         if "width" in k.attributes and not k.resizable:
             used_perc += float(k.attributes["width"].replace("%", ""))/100
