@@ -1,16 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "PyOLXGUI"
+name = "olx_gui"
 version = "0.1.0"
 description = "PyOLXGUI is a simple Dominate based Python library for creating Olex2 GUI files"
 requires-python = ">=3.8"
 dependencies = [
     "dominate",
     "pygments",
-    "rich",
+    "rich"
 ]
 
-[tool.uv.workspace]
-members = ["olexpy"]
-
 [tool.uv.sources]
-dominate = { git = "https://github.com/MilitaoLucas/dominate.git" }
+dominate = { git = "https://github.com/MilitaoLucas/dominate.git"}
