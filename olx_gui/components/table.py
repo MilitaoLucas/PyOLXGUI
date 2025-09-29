@@ -168,6 +168,9 @@ def calculate_useful_size(objs: list) -> str:
     total_nitems = len(objs)
     already_set = 0
     used_perc = 0
+    if total_nitems > 2:
+        return "100%"
+
     for k in objs:
         if isinstance(k, ignore):
             k = k[0]
